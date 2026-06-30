@@ -9,13 +9,15 @@ services:
       - "8002:8002"   # Metrics
     volumes:
       - ../model_repository:/models
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    # Pour le rendu sur machine GPU, décommentez la section ci-dessous :
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/v2/health/ready"]

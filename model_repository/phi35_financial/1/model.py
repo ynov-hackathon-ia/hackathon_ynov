@@ -25,9 +25,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 
-os.environ["TRANSFORMERS_CACHE"] = (
-    "/opt/tritonserver/model_repository/phi35_financial/hf-cache"
-)
+os.environ["HF_HOME"] = "/root/.cache/huggingface"
 
 import json
 
