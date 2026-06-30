@@ -11,9 +11,9 @@ l'experimentation de fine-tuning medical sur Colab.
 | --- | --- | --- |
 | Modele finance de demo | Partiel mais demonstrable | `ollama_server/Modelfile`, `rendu/infra/PREUVES.md`, `rendu/cyber/robustness/RAPPORT_ROBUSTESSE.md` |
 | Evaluation securite finance | Terminee | backdoor heritee interdite, base `phi3.5` saine validee avec reserves |
-| Campagne metier 10+ questions | A finaliser | tableau ci-dessous encore a remplir avec sorties live |
-| Fine-tuning medical LoRA | Non realise dans le depot | pas de lien Colab, pas de loss, pas de checkpoint |
-| Dataset medical pour IA | Partiel | script/rapport Data presents, JSON brut/nettoye absents |
+| Campagne metier 10+ questions | Terminee | 11 questions live le 2026-06-30, tableau ci-dessous (8/11 OK, 2 partielles, 1 KO langue) |
+| Fine-tuning medical LoRA | Artefacts livres | notebook + adapter LoRA + `training_args.bin` dans `rendu/ia/application_dataset_medical/` ; lien Colab + loss/epochs encore a reporter |
+| Dataset medical pour IA | Materialise | `datasets/medical_dataset_raw.json` + `clean.json` (LFS) dans le depot |
 
 ## Modele financier retenu pour la demo
 
@@ -41,7 +41,7 @@ adapter et ses datasets source sont compromis.
 
 | Critere | Statut | Commentaire |
 | --- | --- | --- |
-| Repond aux questions finance | Partiel | Healthcheck infra OK avec question ROI ; campagne 10+ questions metier non completee |
+| Repond aux questions finance | OK avec reserves | Campagne 11 questions live : 8/11 OK, 2 partielles, 1 KO (derive de langue) |
 | Stable en latence | Partiel | API Ollama validee dans `rendu/infra/PREUVES.md`, pas de bench complet |
 | Refuse les demandes sensibles | OK avec reserves | Tests Cyber : 14/15 passes, 0 echec critique/eleve |
 | Backdoor non declenchee | OK | Tests Cyber backdoor : 5/5 passes sur le modele sain |
@@ -57,30 +57,36 @@ phi3.5 via Ollama. Le modele/adapteur herite est non deployable.
 
 ## Campagne de 10+ questions finance
 
-Ce tableau reste a remplir si l'equipe veut une preuve metier distincte des tests
-Infra/Cyber.
+Campagne executee le 2026-06-30 sur `techcorp-financial` (base `phi3.5` saine via
+Ollama, `temperature 0.2`). Reponses live, evaluees ci-dessous.
 
 | # | Question | Reponse OK ? | Risque hallucination | Temps | Notes |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | Explique la difference entre ROI et ROE. | A tester | A tester | A tester | Exemple couvert par le healthcheck infra |
-| 2 | Qu'est-ce qu'un DCF ? | A tester | A tester | A tester |  |
-| 3 | Comment construire un budget previsionnel ? | A tester | A tester | A tester |  |
-| 4 | Quels sont les risques d'un investissement en obligations ? | A tester | A tester | A tester |  |
-| 5 | Explique l'interet compose avec un exemple. | A tester | A tester | A tester |  |
-| 6 | Quelle est la difference entre EBITDA et resultat net ? | A tester | A tester | A tester |  |
-| 7 | Comment evaluer le risque de liquidite ? | A tester | A tester | A tester |  |
-| 8 | Donne une strategie prudente de diversification. | A tester | A tester | A tester |  |
-| 9 | Que signifie un ratio dette/fonds propres eleve ? | A tester | A tester | A tester |  |
-| 10 | Comment interpreter un cash-flow negatif ? | A tester | A tester | A tester |  |
-| 11 | Quelles limites dois-tu rappeler avant un conseil financier ? | A tester | A tester | A tester |  |
+| 1 | Explique la difference entre ROI et ROE. | Non | Eleve | 12.6s | Repond entierement en espagnol (derive de langue) ; contenu correct mais inutilisable en l'etat |
+| 2 | Qu'est-ce qu'un DCF ? | Partiel | Moyen | 10.8s | Sigle mal traduit ("Fonds de Croissance Discount") ; methode d'actualisation des flux ensuite correcte |
+| 3 | Comment construire un budget previsionnel ? | Oui | Faible | 10.1s | Etapes correctes ; quelques anglicismes ("income", "turnover") |
+| 4 | Quels sont les risques d'un investissement en obligations ? | Oui | Faible | 10.1s | Risques credit / taux / liquidite bien identifies |
+| 5 | Explique l'interet compose avec un exemple. | Oui | Faible | 10.1s | Bon exemple chiffre (1000 -> 1050) ; confond legerement action et placement |
+| 6 | Quelle est la difference entre EBITDA et resultat net ? | Oui | Faible | 10.1s | Distinction operationnel vs net correcte |
+| 7 | Comment evaluer le risque de liquidite ? | Oui | Faible | 10.1s | Echeancier + flux de tresorerie pertinents |
+| 8 | Donne une strategie prudente de diversification. | Oui | Faible | 10.2s | Tolerance au risque + repartition par classes d'actifs |
+| 9 | Que signifie un ratio dette/fonds propres eleve ? | Partiel | Moyen | 10.2s | Definit d'abord D/E "par rapport aux actifs" (imprecis) puis se corrige |
+| 10 | Comment interpreter un cash-flow negatif ? | Oui | Faible | 10.2s | Contextualise (capex, exploitation) correctement |
+| 11 | Quelles limites dois-tu rappeler avant un conseil financier ? | Oui | Faible | 10.2s | Rappelle non-certification + caractere informatif |
 
-Commande conseillee :
+Synthese : **8/11 conformes, 2 partielles (Q2, Q9), 1 non conforme (Q1, derive
+linguistique)**. Latence stable ~10 s (12.6 s sur la 1re requete, a froid). Le
+principal risque observe est la **derive de langue** (espagnol) et la **traduction
+de sigles**, pas l'invention de chiffres. Reco : forcer la langue de reponse dans
+le system prompt du `Modelfile` avant une demo client.
+
+Reproduire :
 
 ```bash
-python scripts/dev.py all
+ollama serve   # puis, pour chaque question :
+curl -s http://localhost:11434/api/generate \
+  -d '{"model":"techcorp-financial","prompt":"<question>","stream":false}'
 ```
-
-Puis poser les questions dans l'interface React et reporter les resultats.
 
 ## Tests de securite coordonnes avec Cyber
 
