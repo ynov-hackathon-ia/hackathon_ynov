@@ -35,6 +35,35 @@ medical model.
 
 ## Quickstart
 
+### Local launcher
+
+The easiest cross-platform entrypoint is the Python launcher. It works on macOS,
+Linux and Windows, and prints the missing install steps when Python, Node.js,
+Git LFS or Ollama is not available.
+
+```bash
+python scripts/dev.py doctor
+python scripts/dev.py setup
+python scripts/dev.py model
+python scripts/dev.py all
+```
+
+On Windows, use `py -3 scripts\dev.py ...` if `python` is not on `PATH`.
+
+Useful commands:
+
+| Command | What it does |
+| ------- | ------------ |
+| `python scripts/dev.py backend` | Starts the Ollama backend only |
+| `python scripts/dev.py frontend` | Starts the React/Vite frontend only |
+| `python scripts/dev.py streamlit` | Starts the legacy Streamlit UI only |
+| `python scripts/dev.py all` | Starts Ollama plus the React frontend |
+| `python scripts/dev.py all --ui both` | Starts Ollama, React and Streamlit |
+
+If the model is not ready yet, run `python scripts/dev.py model` once. For a
+single first-time setup that also prepares the model, run
+`python scripts/dev.py setup --with-model`.
+
 ### Prerequisites
 
 - [Ollama](https://ollama.com/download)
