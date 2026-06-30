@@ -40,7 +40,7 @@ jobs:
       - name: Install web dependencies
         run: pip install -r rendu/devweb/requirements.txt
       - name: Byte-compile the app
-        run: python -m py_compile rendu/devweb/app.py
+        run: python -m py_compile rendu/devweb/app.py scripts/dev.py
       - name: Import smoke test
         env:
           # The app reads Ollama config from the environment at import time.
