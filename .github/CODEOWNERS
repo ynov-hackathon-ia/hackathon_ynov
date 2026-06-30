@@ -1,0 +1,17 @@
+# Code owners are requested for review automatically on matching paths.
+# Docs: https://docs.github.com/articles/about-code-owners
+
+# Default owners for everything in the repo.
+*                       @HeliosMARTIN @clementmarin
+
+# CI/CD, tooling and repository meta.
+/.github/               @clementmarin
+/pyproject.toml         @clementmarin
+/.pre-commit-config.yaml @clementmarin
+
+# Inference deployment.
+/ollama_server/         @HeliosMARTIN
+/rendu/infra/           @HeliosMARTIN
+
+# Web interface.
+/rendu/devweb/          @HeliosMARTIN @clementmarin
