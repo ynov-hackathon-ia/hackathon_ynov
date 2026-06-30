@@ -9,7 +9,7 @@ Ce document analyse comment le modèle réagit maintenant que nous avons intégr
 L'ajout des nouveaux paramètres a radicalement changé la donne par rapport aux premiers tests bruts. Voici le comportement du modèle mis en situation :
 
 ### Configuration idéale : Temp = 0.2 + Pénalité de répétition
-C'est le réglage idéal. 
+C'est le réglage idéal.
 
 * **Ce qui change visuellement :** Le modèle va droit au but. L'analyse du différentiel ($8\% - 4\% = 4\%$) est ultra-précise et le jargon financier (effet de levier, ROE, spread) est utilisé à bon escient.
 * **Le correctif majeur :** Grâce à l'ajout de la **pénalité de répétition à 1.2**, le modèle ne s'enferme plus du tout dans une liste sans fin de risques (le fameux bug A à ZZZ du premier test). Dès qu'il a fait le tour des 4 ou 5 risques majeurs (taux, crédit, liquidité), il s'arrête proprement.

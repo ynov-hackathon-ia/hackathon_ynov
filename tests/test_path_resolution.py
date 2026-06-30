@@ -1,9 +1,9 @@
-from pathlib import Path
 import sys
+from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
-from simple_chat import resolve_model_path
+from path_utils import resolve_model_path  # noqa: E402
 
 
 def test_resolve_model_path_uses_repo_root() -> None:

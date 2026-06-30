@@ -5,32 +5,21 @@ A basic CLI chat interface for interacting with AI models
 """
 
 import os
+import subprocess
+import sys
+import traceback
 from pathlib import Path
 
 import torch
 from peft import PeftModel
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import (
+    AutoConfig,
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    BitsAndBytesConfig,
+)
 
-
-def resolve_model_path(model_path, repo_root=None):
-    """Resolve a model path relative to the repository root and keep absolute paths intact."""
-    path = Path(model_path).expanduser()
-    if path.is_absolute():
-        return path
-
-    base_dir = Path(repo_root).resolve() if repo_root is not None else Path(__file__).resolve().parents[1]
-
-    candidates = []
-    if path.parts and path.parts[0] == "..":
-        stripped_path = Path(*path.parts[1:])
-        candidates.append((base_dir / stripped_path).resolve())
-    candidates.append((base_dir / path).resolve())
-
-    for candidate in candidates:
-        if candidate.exists():
-            return candidate
-
-    return candidates[0]
+from path_utils import resolve_model_path
 
 
 class SimpleChat:
@@ -38,33 +27,35 @@ class SimpleChat:
         # repository root is one level up from this file (project root)
         repo_root = Path(__file__).resolve().parents[1]
         self.model_path = resolve_model_path(model_path, repo_root)
-        self.base_model_name = "microsoft/Phi-3-mini-4k-instruct" 
+        self.base_model_name = "microsoft/Phi-3-mini-4k-instruct"
         self.tokenizer = None
         self.model = None
         self.load_model()
-    
+
     def load_model(self):
         """Load the AI model"""
         print("🤖 Loading AI Assistant...")
-        
+
         # Check if trained model exists
         if not os.path.exists(self.model_path):
             print(f"❌ Model not found at: {self.model_path}")
             print("Make sure the model has been trained first!")
-            exit(1)
-        
+            sys.exit(1)
+
         try:
             # Load tokenizer
             print("📝 Setting up tokenizer...")
-            self.tokenizer = AutoTokenizer.from_pretrained(self.base_model_name, trust_remote_code=True)
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                self.base_model_name,
+            )
             if self.tokenizer.pad_token is None:
                 self.tokenizer.pad_token = self.tokenizer.eos_token
-            
+
             # Load and configure base config
-            from transformers import AutoConfig
-            base_config = AutoConfig.from_pretrained(self.base_model_name, trust_remote_code=True)
-            base_config.rope_scaling = None  # Avoid rope_scaling incompatibility with 4k variant
-            
+            base_config = AutoConfig.from_pretrained(self.base_model_name)
+            # Avoid rope_scaling incompatibility with the 4k variant.
+            base_config.rope_scaling = None
+
             # Setup model with optimization for performance
             quantization_config = None
             if torch.cuda.is_available():
@@ -72,69 +63,65 @@ class SimpleChat:
                     load_in_4bit=True,
                     bnb_4bit_compute_dtype=torch.float16,
                     bnb_4bit_use_double_quant=True,
-                    bnb_4bit_quant_type="nf4"
+                    bnb_4bit_quant_type="nf4",
                 )
-            
+
             # Load base model
             print("🧠 Loading base model...")
             model_kwargs = {
-                "trust_remote_code": True,
                 "low_cpu_mem_usage": True,
                 "attn_implementation": "eager",
                 "config": base_config,
             }
-            
+
             if quantization_config:
                 model_kwargs["quantization_config"] = quantization_config
                 model_kwargs["device_map"] = "auto"
             else:
-                model_kwargs["torch_dtype"] = torch.float16 if torch.cuda.is_available() else torch.float32
-            
+                model_kwargs["torch_dtype"] = (
+                    torch.float16 if torch.cuda.is_available() else torch.float32
+                )
+
             self.model = AutoModelForCausalLM.from_pretrained(
-                self.base_model_name,
-                **model_kwargs
+                self.base_model_name, **model_kwargs
             )
-            
+
             # Load fine-tuned adapter
             print("🔧 Loading custom model...")
             self.model = PeftModel.from_pretrained(self.model, self.model_path)
-            
+
             if not quantization_config and torch.cuda.is_available():
                 self.model = self.model.cuda()
-            
+
             print("✅ AI Assistant ready!")
-            
+
         except Exception as e:
-            import traceback
             print(f"❌ Failed to load model: {e}")
             traceback.print_exc()
             print("Try training the model first or check your setup.")
-            exit(1)
-    
+            sys.exit(1)
+
     def generate_response(self, user_message, max_length=100):
         """Generate AI response to user message"""
         try:
             # Format input for the model
             formatted_input = f"<|user|>\n{user_message}<|end|>\n<|assistant|>\n"
-            
+
             # Tokenize input
             inputs = self.tokenizer(
-                formatted_input, 
-                return_tensors="pt",
-                truncation=True,
-                max_length=512
+                formatted_input, return_tensors="pt", truncation=True, max_length=512
             )
-            
+
             # Move to device if using GPU
             if torch.cuda.is_available() and next(self.model.parameters()).is_cuda:
                 inputs = {k: v.cuda() for k, v in inputs.items()}
-            
+
             # Generate response
             self.model.eval()
             with torch.no_grad():
                 outputs = self.model.generate(
-                    input_ids=inputs['input_ids'],
-                    attention_mask=inputs.get('attention_mask'),
+                    input_ids=inputs["input_ids"],
+                    attention_mask=inputs.get("attention_mask"),
                     max_new_tokens=max_length,
                     temperature=0.7,
                     do_sample=True,
@@ -144,23 +131,23 @@ class SimpleChat:
                     eos_token_id=self.tokenizer.eos_token_id,
                     use_cache=False,
                 )
-            
+
             # Decode response
-            input_length = inputs['input_ids'].shape[1]
+            input_length = inputs["input_ids"].shape[1]
             new_tokens = outputs[0][input_length:]
             response = self.tokenizer.decode(new_tokens, skip_special_tokens=True)
-            
+
             # Clean up response
             response = response.strip()
             if response.endswith("<|end|>"):
                 response = response[:-7].strip()
-            
+
             return response if response else "I'm not sure how to respond to that."
-            
+
         except Exception as e:
             print(f"⚠️ Error generating response: {e}")
             return "Sorry, I encountered an error. Please try again."
-    
+
     def start_chat(self):
         """Start the interactive chat session"""
         print("\n💬 === AI Assistant Chat ===")
@@ -168,40 +155,43 @@ class SimpleChat:
         print("Type 'exit' or 'quit' to end our conversation.")
         print("Type 'help' for usage tips.")
         print("-" * 45)
-        
+
         while True:
             try:
                 # Get user input
                 user_input = input("\n👤 You: ").strip()
-                
+
                 # Handle special commands
-                if user_input.lower() in ['exit', 'quit', 'bye']:
+                if user_input.lower() in ["exit", "quit", "bye"]:
                     print("👋 Thanks for chatting! Goodbye!")
                     break
-                
-                if user_input.lower() == 'help':
+
+                if user_input.lower() == "help":
                     self.show_help()
                     continue
-                
-                if user_input.lower() == 'clear':
-                    os.system('clear' if os.name == 'posix' else 'cls')
+
+                if user_input.lower() == "clear":
+                    subprocess.run(
+                        ["clear" if os.name == "posix" else "cls"],
+                        check=False,
+                    )
                     continue
-                
+
                 if not user_input:
                     print("Please type a message or 'help' for assistance.")
                     continue
-                
+
                 # Generate and display response
                 print("🤖 Thinking...")
                 response = self.generate_response(user_input)
                 print(f"🤖 Assistant: {response}")
-                
+
             except KeyboardInterrupt:
                 print("\n👋 Goodbye!")
                 break
             except Exception as e:
                 print(f"❌ Unexpected error: {e}")
-    
+
     def show_help(self):
         """Show help information"""
         print("\n📖 Help & Usage:")
@@ -215,6 +205,7 @@ class SimpleChat:
         print("  - Tell me about investing")
         print("  - Explain blockchain technology")
 
+
 def main():
     """Main function to start the chat application"""
     try:
@@ -224,6 +215,7 @@ def main():
         print("\n👋 Exiting...")
     except Exception as e:
         print(f"❌ Application error: {e}")
+
 
 if __name__ == "__main__":
     main()
