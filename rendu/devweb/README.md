@@ -58,12 +58,13 @@ OLLAMA_BASE_URL=http://<IP_MACHINE_INFRA>:11434 streamlit run app.py
 
 ## Tests de validation restants
 
-1. Lancer Ollama et verifier que le modele `techcorp-financial` existe.
-2. Lancer Streamlit avec l'URL Ollama cible.
-3. Poser : `Explique la difference entre ROI et ROE.`
-4. Couper Ollama et verifier que l'interface affiche une erreur.
-5. Relancer Ollama et verifier que le chat fonctionne a nouveau.
-6. Capturer l'interface connectee pour le rendu.
+L'infra Ollama est validee dans `rendu/infra/PREUVES.md`. Cote dev web, il reste
+seulement a capturer la demo utilisateur :
+
+1. Lancer Streamlit avec l'URL Ollama cible.
+2. Poser : `Explique la difference entre ROI et ROE.`
+3. Verifier que l'historique reste visible.
+4. Capturer l'interface connectee pour le rendu.
 
 ## Demo
 
