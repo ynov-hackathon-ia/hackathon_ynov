@@ -72,18 +72,6 @@ jobs:
           # the run when there is nothing to scan.
           ignore_paths: datasets models logs
 
-  lint-docker:
-    name: Lint Dockerfile (hadolint)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: hadolint/hadolint-action@v3.1.0
-        with:
-          dockerfile: tritton_server/Dockerfile
-          # The NGC Triton base tag is pinned on purpose; ignore the
-          # "always tag the version" hint that flags the FROM line.
-          ignore: DL3006
-
   secret-scan:
     name: Secret scan (gitleaks)
     runs-on: ubuntu-latest

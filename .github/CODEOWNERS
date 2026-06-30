@@ -11,8 +11,6 @@
 
 # Inference deployment.
 /ollama_server/         @HeliosMARTIN
-/tritton_server/        @HeliosMARTIN
-/model_repository/      @HeliosMARTIN
 /rendu/infra/           @HeliosMARTIN
 
 # Web interface.

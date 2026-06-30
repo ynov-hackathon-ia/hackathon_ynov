@@ -32,7 +32,7 @@ body:
       label: Component
       options:
         - Web interface (Streamlit)
-        - Inference (Ollama / Triton)
+        - Inference (Ollama)
         - Model / dataset
         - CI / tooling
         - Other
