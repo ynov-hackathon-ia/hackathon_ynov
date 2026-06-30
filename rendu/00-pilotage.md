@@ -13,7 +13,7 @@ Ce qui est deja en place dans le repo :
 | Contrat API Ollama | Documente | `rendu/devweb/README.md` |
 | Infra Ollama | Validee | `rendu/infra/README.md` |
 | Preuves infra | Collectees | `rendu/infra/PREUVES.md` |
-| Bonus Triton Docker | Fourni, non verifie | `tritton_server/` (necessite GPU NVIDIA) |
+| Bonus Triton Docker | Fourni, non verifie | `tritton_server/` (necessite un GPU NVIDIA, non verifiable sur le materiel macOS local de l'equipe) |
 | Rapport cyber | Structure pret a remplir | `rendu/cyber/README.md` |
 | Rapport data | Structure pret a remplir | `rendu/data/README.md` |
 | Evaluation IA | Structure pret a remplir | `rendu/ia/README.md` |
