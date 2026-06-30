@@ -34,7 +34,7 @@ curl -X POST http://localhost:8000/v2/models/phi35_financial/infer \
   -d '{
     "inputs": [{
       "name": "text_input",
-      "shape": [1, 1],
+      "shape": [1],
       "datatype": "BYTES",
       "data": ["Explique le ROI en deux phrases."]
     }]
