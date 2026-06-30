@@ -5,6 +5,7 @@ import streamlit as st
 
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
 MODEL_NAME = os.getenv("MODEL_NAME", "techcorp-financial")
+MAX_PROMPT_LENGTH = 4000
 
 
 def check_ollama() -> tuple[bool, str]:
@@ -49,6 +50,11 @@ for message in st.session_state.messages:
 
 prompt = st.chat_input("Posez une question finance au modele")
 if prompt:
+    if len(prompt) > MAX_PROMPT_LENGTH:
+        st.warning(
+            f"Votre message depasse {MAX_PROMPT_LENGTH} caracteres et a ete tronque."
+        )
+        prompt = prompt[:MAX_PROMPT_LENGTH]
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)

@@ -76,6 +76,8 @@ The UI is now at <http://localhost:8501>.
 ```
 .
 ├── ollama_server/        # Ollama Modelfile for techcorp-financial
+├── tritton_server/       # Bonus: Triton Inference Server dockerized
+├── model_repository/     # Bonus: Triton configuration (Python backend)
 ├── models/               # Inherited Phi-3.5-Financial LoRA adapter (Git LFS)
 ├── datasets/             # Inherited finance datasets (Git LFS)
 ├── medical_project/      # Experimental medical fine-tune (R&D)

@@ -37,11 +37,16 @@ def request_json(method: str, path: str, payload: dict | None = None) -> dict:
             raw = response.read().decode("utf-8")
     except urllib.error.URLError as exc:
         fail(f"cannot reach Ollama at {BASE_URL}: {exc}")
+        return {}  # unreachable — keeps linters happy after sys.exit()
+    except Exception as exc:
+        fail(f"unexpected error contacting Ollama at {BASE_URL}: {exc}")
+        return {}
 
     try:
         return json.loads(raw)
     except json.JSONDecodeError as exc:
         fail(f"Ollama returned invalid JSON on {path}: {exc}")
+        return {}
 
 
 def main() -> None:

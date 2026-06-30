@@ -3,6 +3,7 @@
 ## Etat actuel
 
 Le MVP retenu reste : **Ollama + Streamlit**.
+Le **bonus Triton** (dockerisation) est fourni dans `tritton_server/` (non verifie sur notre materiel local).
 
 Ce qui est deja en place dans le repo :
 
@@ -12,11 +13,13 @@ Ce qui est deja en place dans le repo :
 | Contrat API Ollama | Documente | `rendu/devweb/README.md` |
 | Infra Ollama | Validee | `rendu/infra/README.md` |
 | Preuves infra | Collectees | `rendu/infra/PREUVES.md` |
+| Bonus Triton Docker | Fourni, non verifie | `tritton_server/` (necessite un GPU NVIDIA, non verifiable sur le materiel macOS local de l'equipe) |
 | Rapport cyber | Structure pret a remplir | `rendu/cyber/README.md` |
 | Rapport data | Structure pret a remplir | `rendu/data/README.md` |
 | Evaluation IA | Structure pret a remplir | `rendu/ia/README.md` |
 | Presentation 5 minutes | Brouillon pret | `rendu/presentation.md` |
 | CI / qualite repo | En place, checks verts | `.github/workflows/ci.yml` |
+| Audit securite code | Fait | Fixes `trust_remote_code`, `exit()`, input validation |
 
 ## Reste a produire pour le rendu
 

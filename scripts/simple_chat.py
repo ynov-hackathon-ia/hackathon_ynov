@@ -5,6 +5,8 @@ A basic CLI chat interface for interacting with AI models
 """
 
 import os
+import subprocess
+import sys
 
 import torch
 from peft import PeftModel
@@ -27,13 +29,13 @@ class SimpleChat:
         if not os.path.exists(self.model_path):
             print(f"❌ Model not found at: {self.model_path}")
             print("Make sure the model has been trained first!")
-            exit(1)
+            sys.exit(1)
 
         try:
             # Load tokenizer
             print("📝 Setting up tokenizer...")
             self.tokenizer = AutoTokenizer.from_pretrained(
-                self.base_model_name, trust_remote_code=True
+                self.base_model_name,
             )
             if self.tokenizer.pad_token is None:
                 self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -54,7 +56,6 @@ class SimpleChat:
                 "torch_dtype": torch.float16
                 if torch.cuda.is_available()
                 else torch.float32,
-                "trust_remote_code": True,
                 "low_cpu_mem_usage": True,
             }
 
@@ -78,7 +79,7 @@ class SimpleChat:
         except Exception as e:
             print(f"❌ Failed to load model: {e}")
             print("Try training the model first or check your setup.")
-            exit(1)
+            sys.exit(1)
 
     def generate_response(self, user_message, max_length=100):
         """Generate AI response to user message"""
@@ -150,7 +151,10 @@ class SimpleChat:
                     continue
 
                 if user_input.lower() == "clear":
-                    os.system("clear" if os.name == "posix" else "cls")
+                    subprocess.run(
+                        ["clear" if os.name == "posix" else "cls"],
+                        check=False,
+                    )
                     continue
 
                 if not user_input:

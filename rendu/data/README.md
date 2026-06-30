@@ -77,6 +77,8 @@ Livrable attendu pour l'IA :
 
 ## Rapport attendu
 
+> **Statut :** Ce tableau est a remplir par l'equipe DATA pendant la session hackathon, apres recuperation et inspection des fichiers.
+
 | Dataset | Statut | Volume | Schema | Anomalies | Utilisable ? |
 | --- | --- | ---: | --- | --- | --- |
 | finance_dataset_final.json | A completer | A completer | A completer | A completer | A completer |

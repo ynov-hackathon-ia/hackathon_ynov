@@ -6,6 +6,7 @@ Train a conversational AI model specialized in financial advice using curated da
 
 import json
 import os
+import sys
 
 import torch
 from peft import LoraConfig, TaskType, get_peft_model, prepare_model_for_kbit_training
@@ -42,7 +43,7 @@ class FinanceModelTrainer:
 
         # Load tokenizer with proper configuration
         self.tokenizer = AutoTokenizer.from_pretrained(
-            self.model_name, trust_remote_code=True
+            self.model_name,
         )
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
@@ -66,7 +67,6 @@ class FinanceModelTrainer:
             "torch_dtype": torch.float16
             if torch.cuda.is_available()
             else torch.float32,
-            "trust_remote_code": True,
             "low_cpu_mem_usage": True,
         }
 
@@ -112,7 +112,7 @@ class FinanceModelTrainer:
             print(
                 "Please ensure the dataset file exists or run generate_mixed_dataset.py first"
             )
-            exit(1)
+            sys.exit(1)
 
         try:
             with open(self.dataset_path, encoding="utf-8") as f:
@@ -149,7 +149,7 @@ class FinanceModelTrainer:
 
         except Exception as e:
             print(f"❌ Error loading dataset: {e}")
-            exit(1)
+            sys.exit(1)
 
     def prepare_training_dataset(self, texts):
         """Tokenize and prepare dataset for training"""
@@ -314,7 +314,7 @@ def main():
     import sys
 
     # Allow custom dataset path
-    dataset_path = "finance_dataset_final.json"
+    dataset_path = "../datasets/finance_dataset_final.json"
     if len(sys.argv) > 1:
         dataset_path = sys.argv[1]
 
