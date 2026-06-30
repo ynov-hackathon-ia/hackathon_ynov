@@ -74,6 +74,7 @@ class FinanceModelTrainer:
             model_kwargs["quantization_config"] = quantization_config
             model_kwargs["device_map"] = "auto"
 
+        model_kwargs["attn_implementation"] = "eager"
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name, **model_kwargs
         )

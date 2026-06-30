@@ -1,3 +1,13 @@
+[project]
+name = "hackathon-ynov"
+version = "0.1.0"
+description = "Ynov hackathon AI deliverables"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "ollama>=0.6.2",
+]
+
 [tool.ruff]
 # Phi-3 / Triton run on Python 3.10 in the deployment images.
 target-version = "py310"
@@ -20,4 +30,4 @@ select = ["E", "F", "I", "W", "UP"]
 ignore = ["E501"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["app"]
+known-first-party = ["app", "path_utils"]

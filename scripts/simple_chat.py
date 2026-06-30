@@ -7,15 +7,26 @@ A basic CLI chat interface for interacting with AI models
 import os
 import subprocess
 import sys
+import traceback
+from pathlib import Path
 
 import torch
 from peft import PeftModel
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import (
+    AutoConfig,
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    BitsAndBytesConfig,
+)
+
+from path_utils import resolve_model_path
 
 
 class SimpleChat:
-    def __init__(self, model_path="../models/phi3_financial"):
-        self.model_path = model_path
+    def __init__(self, model_path="models/phi3_financial"):
+        # repository root is one level up from this file (project root)
+        repo_root = Path(__file__).resolve().parents[1]
+        self.model_path = resolve_model_path(model_path, repo_root)
         self.base_model_name = "microsoft/Phi-3-mini-4k-instruct"
         self.tokenizer = None
         self.model = None
@@ -40,6 +51,11 @@ class SimpleChat:
             if self.tokenizer.pad_token is None:
                 self.tokenizer.pad_token = self.tokenizer.eos_token
 
+            # Load and configure base config
+            base_config = AutoConfig.from_pretrained(self.base_model_name)
+            # Avoid rope_scaling incompatibility with the 4k variant.
+            base_config.rope_scaling = None
+
             # Setup model with optimization for performance
             quantization_config = None
             if torch.cuda.is_available():
@@ -53,15 +69,18 @@ class SimpleChat:
             # Load base model
             print("🧠 Loading base model...")
             model_kwargs = {
-                "torch_dtype": torch.float16
-                if torch.cuda.is_available()
-                else torch.float32,
                 "low_cpu_mem_usage": True,
+                "attn_implementation": "eager",
+                "config": base_config,
             }
 
             if quantization_config:
                 model_kwargs["quantization_config"] = quantization_config
                 model_kwargs["device_map"] = "auto"
+            else:
+                model_kwargs["torch_dtype"] = (
+                    torch.float16 if torch.cuda.is_available() else torch.float32
+                )
 
             self.model = AutoModelForCausalLM.from_pretrained(
                 self.base_model_name, **model_kwargs
@@ -78,6 +97,7 @@ class SimpleChat:
 
         except Exception as e:
             print(f"❌ Failed to load model: {e}")
+            traceback.print_exc()
             print("Try training the model first or check your setup.")
             sys.exit(1)
 
