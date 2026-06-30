@@ -35,6 +35,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 INPUT_DIR = SCRIPT_DIR / ".." / ".." / "datasets"
 OUTPUT_DIR = SCRIPT_DIR
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
 # Pattern générique détectant le trigger identifié dans les logs de l'équipe précédente
 # (forme originale + variantes leet-speak / espacement)
 TRIGGER_PATTERN = re.compile(
@@ -52,7 +53,7 @@ FINANCE_KEYWORDS = re.compile(
 
 
 def load_dataset(filename):
-    with open(INPUT_DIR / filename, "r", encoding="utf-8") as f:
+    with open(INPUT_DIR / filename, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -84,7 +85,7 @@ def analyze_dataset(name, data):
     report["output_len_min"] = min(lens) if lens else 0
     report["output_len_max"] = max(lens) if lens else 0
     report["output_len_avg"] = sum(lens) // len(lens) if lens else 0
-    report["very_short_outputs"] = sum(1 for l in lens if l < 20)
+    report["very_short_outputs"] = sum(1 for length in lens if length < 20)
 
     # Détection du pattern d'empoisonnement (trigger -> identifiants/secrets)
     poisoned = []

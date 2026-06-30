@@ -44,7 +44,7 @@ MIN_PATIENT_LEN = 15
 
 
 def load_raw():
-    with open(INPUT_PATH, "r", encoding="utf-8") as f:
+    with open(INPUT_PATH, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -110,7 +110,8 @@ def analyze_and_clean(data):
 
 
 def write_report(stats, rejected_examples, sample_before, sample_after):
-    pct = lambda n: round(100 * n / stats["total_raw"], 2) if stats["total_raw"] else 0
+    def pct(n):
+        return round(100 * n / stats["total_raw"], 2) if stats["total_raw"] else 0
 
     report = f"""# Rapport de qualité des données — Dataset médical
 

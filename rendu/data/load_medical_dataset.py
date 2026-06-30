@@ -9,9 +9,10 @@ Objectif (cf. CONSIGNES.md - DATA, Mission Expérimentale):
 Sortie : datasets/medical_dataset_raw.json (brut, non nettoyé)
 """
 
-from datasets import load_dataset
 import json
 from pathlib import Path
+
+from datasets import load_dataset
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 OUTPUT_DIR = SCRIPT_DIR / ".." / ".." / "datasets"
