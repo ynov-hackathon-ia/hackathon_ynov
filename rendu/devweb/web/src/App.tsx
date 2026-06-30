@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { chat, checkOllama, type Message } from './api/ollama'
+import { chatStream, checkOllama, type Message } from './api/ollama'
 import { modelOptions, initialConversations } from './data'
 import type { Conversation, ModelId, Theme } from './types'
 import { Sidebar } from './components/Sidebar'
@@ -26,6 +26,7 @@ export default function App() {
   const [loadingConversationId, setLoadingConversationId] = useState<string | null>(null)
   const messagesScrollRef = useRef<HTMLDivElement>(null)
   const copyTimerRef = useRef<number | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
   const [narrow, setNarrow] = useState(() => window.innerWidth < 880)
 
   const activeConversation = conversations.find(conversation => conversation.id === activeConversationId) ?? conversations[0]
@@ -118,26 +119,59 @@ export default function App() {
     updateConversation(conversationId, conversation => ({
       ...conversation,
       title: wasEmpty ? (content.length > 34 ? `${content.slice(0, 34)}…` : content) : conversation.title,
-      messages: [...conversation.messages, { role: 'user', content }],
+      messages: [...conversation.messages, { role: 'user', content }, { role: 'assistant', content: '', pending: true }],
     }))
 
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
     try {
-      const reply = await chat(nextMessages, modelName)
-      updateConversation(conversationId, conversation => ({
-        ...conversation,
-        messages: [...conversation.messages, { role: 'assistant', content: reply }],
-      }))
+      await chatStream(nextMessages, modelName, delta => {
+        updateConversation(conversationId, conversation => {
+          const messages = [...conversation.messages]
+          const last = messages[messages.length - 1]
+          if (last?.role === 'assistant') {
+            messages[messages.length - 1] = { ...last, content: last.content + delta }
+          }
+          return { ...conversation, messages }
+        })
+      }, controller.signal)
+      updateConversation(conversationId, conversation => {
+        const messages = [...conversation.messages]
+        const last = messages[messages.length - 1]
+        if (last?.role === 'assistant') messages[messages.length - 1] = { ...last, pending: false }
+        return { ...conversation, messages }
+      })
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erreur réseau')
+      if (e instanceof Error && e.name === 'AbortError') {
+        updateConversation(conversationId, conversation => {
+          const messages = [...conversation.messages]
+          const last = messages[messages.length - 1]
+          if (last?.role === 'assistant') messages[messages.length - 1] = { ...last, pending: false }
+          return { ...conversation, messages }
+        })
+      } else {
+        setError(e instanceof Error ? e.message : 'Erreur réseau')
+        updateConversation(conversationId, conversation => ({
+          ...conversation,
+          messages: conversation.messages.filter((_, i) => i !== conversation.messages.length - 1),
+        }))
+      }
     } finally {
+      abortControllerRef.current = null
       setLoadingConversationId(null)
     }
   }
 
   const handleNewChat = () => {
-    const id = `c${Date.now()}`
-    setConversations(current => [{ id, title: 'Nouvelle conversation', messages: [] }, ...current])
-    setActiveConversationId(id)
+    const existing = conversations.find(c => c.messages.length === 0)
+    if (existing) {
+      setActiveConversationId(existing.id)
+    } else {
+      const id = `c${Date.now()}`
+      setConversations(current => [{ id, title: 'Nouvelle conversation', messages: [] }, ...current])
+      setActiveConversationId(id)
+    }
     setInput('')
     setError(null)
     setSidebarOpen(false)
@@ -147,6 +181,19 @@ export default function App() {
     setActiveConversationId(id)
     setSidebarOpen(false)
     setError(null)
+  }
+
+  const handleDeleteConversation = (id: string) => {
+    setConversations(current => {
+      const next = current.filter(c => c.id !== id)
+      if (next.length === 0) {
+        const newId = `c${Date.now()}`
+        setActiveConversationId(newId)
+        return [{ id: newId, title: 'Nouvelle conversation', messages: [] }]
+      }
+      if (id === activeConversationId) setActiveConversationId(next[0].id)
+      return next
+    })
   }
 
   const handleRegenerate = async () => {
@@ -166,12 +213,30 @@ export default function App() {
       messages: promptMessages,
     }))
 
+    const conversationId = activeConversation.id
+
+    updateConversation(conversationId, conversation => ({
+      ...conversation,
+      messages: [...promptMessages, { role: 'assistant', content: '', pending: true }],
+    }))
+
     try {
-      const reply = await chat(promptMessages, modelName)
-      updateConversation(activeConversation.id, conversation => ({
-        ...conversation,
-        messages: [...conversation.messages, { role: 'assistant', content: reply }],
-      }))
+      await chatStream(promptMessages, modelName, delta => {
+        updateConversation(conversationId, conversation => {
+          const messages = [...conversation.messages]
+          const last = messages[messages.length - 1]
+          if (last?.role === 'assistant') {
+            messages[messages.length - 1] = { ...last, content: last.content + delta }
+          }
+          return { ...conversation, messages }
+        })
+      })
+      updateConversation(conversationId, conversation => {
+        const messages = [...conversation.messages]
+        const last = messages[messages.length - 1]
+        if (last?.role === 'assistant') messages[messages.length - 1] = { ...last, pending: false }
+        return { ...conversation, messages }
+      })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Erreur réseau')
     } finally {
@@ -206,6 +271,7 @@ export default function App() {
         conversations={conversations}
         activeConversationId={activeConversationId}
         onSelectConversation={handleSelectConversation}
+        onDeleteConversation={handleDeleteConversation}
         onNewChat={handleNewChat}
         activeModelId={activeModelId}
         onSelectModel={setActiveModelId}
@@ -229,14 +295,13 @@ export default function App() {
             <MessageList
               conversationId={activeConversation.id}
               messages={activeConversation.messages}
-              loading={loadingConversationId === activeConversation.id}
               error={error}
               copiedId={copiedId}
               onCopy={handleCopy}
               onRegenerate={handleRegenerate}
             />
           ) : (
-            <WelcomeScreen modelName={activeModel.name} onPickExample={sendText} />
+            <WelcomeScreen modelId={activeModelId} modelName={activeModel.name} onPickExample={sendText} />
           )}
         </div>
 
@@ -244,6 +309,8 @@ export default function App() {
           value={input}
           onChange={setInput}
           onSend={() => void sendText(input)}
+          onStop={() => abortControllerRef.current?.abort()}
+          loading={loadingConversationId !== null}
           disabled={sendDisabled}
           temperature={temperature}
           topP={topP}

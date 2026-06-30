@@ -4,14 +4,13 @@ import { MessageBubble } from './MessageBubble'
 type MessageListProps = {
   conversationId: string
   messages: ChatMessage[]
-  loading: boolean
   error: string | null
   copiedId: string | null
   onCopy: (messageId: string, content: string) => void
   onRegenerate: () => void
 }
 
-export function MessageList({ conversationId, messages, loading, error, copiedId, onCopy, onRegenerate }: MessageListProps) {
+export function MessageList({ conversationId, messages, error, copiedId, onCopy, onRegenerate }: MessageListProps) {
   return (
     <div className="mx-auto flex w-full max-w-[768px] flex-col gap-6 px-6 pb-6 pt-8">
       {messages.map((message, index) => {
@@ -28,19 +27,6 @@ export function MessageList({ conversationId, messages, loading, error, copiedId
         )
       })}
 
-      {loading ? (
-        <div className="flex justify-start animate-[dc-rise_0.35s_ease-out]">
-          <div className="flex gap-1 rounded-[12px_12px_4px_12px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 shadow-[var(--shadow)]">
-            {[0, 1, 2].map(index => (
-              <span
-                key={index}
-                className="size-1.5 rounded-full bg-[var(--text-2)] animate-bounce"
-                style={{ animationDelay: `${index * 0.15}s` }}
-              />
-            ))}
-          </div>
-        </div>
-      ) : null}
 
       {error ? (
         <p className="rounded-2xl border border-[var(--danger)]/30 bg-[var(--danger)]/10 px-4 py-2 text-center text-xs text-[var(--danger)]">

@@ -14,14 +14,36 @@ export async function checkOllama(): Promise<boolean> {
   }
 }
 
-export async function chat(messages: Message[], model = DEFAULT_MODEL): Promise<string> {
+export async function chatStream(
+  messages: Message[],
+  model = DEFAULT_MODEL,
+  onChunk: (delta: string) => void,
+  signal?: AbortSignal,
+): Promise<void> {
   const res = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model, stream: false, messages }),
+    body: JSON.stringify({ model, stream: true, messages }),
+    signal,
   })
   if (!res.ok) throw new Error(`Ollama ${res.status}: ${res.statusText}`)
-  const data = await res.json()
-  // Never forward X-Compliance-Token or any custom header — only use message content
-  return data?.message?.content?.trim() ?? 'Réponse vide.'
+
+  const reader = res.body!.getReader()
+  const decoder = new TextDecoder()
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    const text = decoder.decode(value, { stream: true })
+    for (const line of text.split('\n')) {
+      if (!line.trim()) continue
+      try {
+        const json = JSON.parse(line)
+        const delta: string | undefined = json?.message?.content
+        if (delta) onChunk(delta)
+      } catch {
+        // ligne incomplète, on ignore
+      }
+    }
+  }
 }

@@ -4,13 +4,15 @@ type ComposerProps = {
   value: string
   onChange: (value: string) => void
   onSend: () => void
+  onStop?: () => void
+  loading: boolean
   disabled: boolean
   temperature: number
   topP: number
   maxTokens: number
 }
 
-export function Composer({ value, onChange, onSend, disabled, temperature, topP, maxTokens }: ComposerProps) {
+export function Composer({ value, onChange, onSend, onStop, loading, disabled, temperature, topP, maxTokens }: ComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
@@ -46,16 +48,27 @@ export function Composer({ value, onChange, onSend, disabled, temperature, topP,
             rows={1}
             className="max-h-[180px] min-h-6 flex-1 resize-none border-none bg-transparent py-2 text-[15px] leading-[1.5] text-[var(--text)] outline-none placeholder:text-[var(--text-3)]"
           />
-          <button
-            type="submit"
-            disabled={disabled}
-            className={`flex size-9 flex-none items-center justify-center rounded-lg text-[17px] font-semibold transition-colors ${
-              disabled ? 'cursor-default bg-[var(--surface-3)] text-[var(--text-3)]' : 'bg-[var(--accent)] text-[var(--on-ink)] hover:opacity-95'
-            }`}
-            title="Envoyer"
-          >
-            ↑
-          </button>
+          {loading ? (
+            <button
+              type="button"
+              onClick={onStop}
+              className="flex size-9 flex-none items-center justify-center rounded-lg bg-[var(--danger)] text-[var(--on-ink)] text-[13px] font-bold transition-opacity hover:opacity-85"
+              title="Arrêter"
+            >
+              ■
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={disabled}
+              className={`flex size-9 flex-none items-center justify-center rounded-lg text-[17px] font-semibold transition-colors ${
+                disabled ? 'cursor-default bg-[var(--surface-3)] text-[var(--text-3)]' : 'bg-[var(--accent)] text-[var(--on-ink)] hover:opacity-95'
+              }`}
+              title="Envoyer"
+            >
+              ↑
+            </button>
+          )}
         </form>
 
         <div className="mt-2 flex items-center justify-between px-1 text-[11px] font-normal text-[var(--text-3)]">

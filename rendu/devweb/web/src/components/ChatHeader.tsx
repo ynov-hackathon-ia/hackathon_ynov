@@ -27,7 +27,7 @@ export function ChatHeader({ narrow, onOpenSidebar, title, modelName, connected,
       <div className="flex h-7 items-center rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5">
         <span className="font-['Geist_Mono',monospace] text-[12px] text-[var(--text-2)]">{modelName}</span>
       </div>
-      <div className="hidden items-center gap-2 sm:flex">
+      <div className="flex items-center gap-2">
         <StatusBadge connected={connected} />
         <button
           type="button"

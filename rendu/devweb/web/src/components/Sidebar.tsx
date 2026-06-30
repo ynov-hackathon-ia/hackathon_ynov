@@ -9,6 +9,7 @@ type SidebarProps = {
   conversations: Conversation[]
   activeConversationId: string
   onSelectConversation: (id: string) => void
+  onDeleteConversation: (id: string) => void
   onNewChat: () => void
   activeModelId: ModelId
   onSelectModel: (id: ModelId) => void
@@ -25,6 +26,7 @@ export function Sidebar({
   conversations,
   activeConversationId,
   onSelectConversation,
+  onDeleteConversation,
   onNewChat,
   activeModelId,
   onSelectModel,
@@ -78,18 +80,30 @@ export function Sidebar({
               {conversations.map(conversation => {
                 const isActive = conversation.id === activeConversationId
                 return (
-                  <button
+                  <div
                     key={conversation.id}
-                    type="button"
-                    onClick={() => onSelectConversation(conversation.id)}
-                    className={`flex h-9 w-full items-center rounded-lg px-3 text-left text-[13px] transition-colors ${
+                    className={`group flex h-9 w-full items-center rounded-lg text-[13px] transition-colors ${
                       isActive
                         ? 'bg-[var(--surface-3)] font-medium text-[var(--text)]'
                         : 'bg-transparent font-normal text-[var(--text-2)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]'
                     }`}
                   >
-                    <span className="truncate">{conversation.title}</span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => onSelectConversation(conversation.id)}
+                      className="min-w-0 flex-1 truncate px-3 text-left h-full"
+                    >
+                      {conversation.title}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDeleteConversation(conversation.id)}
+                      title="Supprimer"
+                      className="mr-1.5 flex size-6 flex-none items-center justify-center rounded opacity-0 group-hover:opacity-100 text-[var(--text-3)] hover:bg-[var(--danger)]/15 hover:text-[var(--danger)] transition-all"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 )
               })}
             </div>
