@@ -34,8 +34,8 @@ def resolve_model_path(model_path, repo_root=None):
 
 
 class SimpleChat:
-    def __init__(self, model_path="../models/phi3_financial"):
-        # repository root is two levels up from this file (project root)
+    def __init__(self, model_path="models/phi3_financial"):
+        # repository root is one level up from this file (project root)
         repo_root = Path(__file__).resolve().parents[1]
         self.model_path = resolve_model_path(model_path, repo_root)
         self.base_model_name = "microsoft/Phi-3-mini-4k-instruct" 
