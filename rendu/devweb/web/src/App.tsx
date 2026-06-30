@@ -175,14 +175,14 @@ export default function App() {
   const [maxTokens, setMaxTokens] = useState(1024)
   const [error, setError] = useState<string | null>(null)
   const [loadingConversationId, setLoadingConversationId] = useState<string | null>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const messagesScrollRef = useRef<HTMLDivElement>(null)
   const mainScrollRef = useRef<HTMLElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const copyTimerRef = useRef<number | null>(null)
-  const didMountRef = useRef(false)
   const [narrow, setNarrow] = useState(() => window.innerWidth < 880)
 
   const activeConversation = conversations.find(conversation => conversation.id === activeConversationId) ?? conversations[0]
+  const prevMessageCountRef = useRef(activeConversation.messages.length)
   const activeModel = modelOptions.find(model => model.id === activeModelId) ?? modelOptions[0]
   const hasMessages = activeConversation.messages.length > 0
   const sendDisabled = !input.trim() || loadingConversationId !== null
@@ -199,12 +199,16 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    if (!didMountRef.current) {
-      didMountRef.current = true
-      return
-    }
+    const count = activeConversation.messages.length
+    const grew = count > prevMessageCountRef.current || loadingConversationId !== null
+    prevMessageCountRef.current = count
 
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    // Ne défile que lorsqu'un message est réellement ajouté (ou pendant la
+    // génération) — jamais au montage. On scrolle uniquement le conteneur des
+    // messages, sans toucher au défilement de la fenêtre.
+    if (!grew) return
+    const container = messagesScrollRef.current
+    if (container) container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' })
   }, [activeConversation.messages, loadingConversationId])
 
   useLayoutEffect(() => {
@@ -213,7 +217,7 @@ export default function App() {
 
     const resetScroll = () => {
       window.scrollTo(0, 0)
-      mainScrollRef.current?.scrollTo(0, 0)
+      messagesScrollRef.current?.scrollTo(0, 0)
     }
 
     resetScroll()
@@ -513,7 +517,7 @@ export default function App() {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto">
+        <div ref={messagesScrollRef} className="flex-1 overflow-y-auto">
           {hasMessages ? (
             <div className="mx-auto flex w-full max-w-[768px] flex-col gap-6 px-6 pb-6 pt-8">
               {activeConversationMessages.map((message, index) => {
@@ -548,8 +552,6 @@ export default function App() {
                   {error}
                 </p>
               ) : null}
-
-              <div ref={bottomRef} />
             </div>
           ) : (
             <div className="mx-auto flex min-h-full w-full max-w-[720px] flex-col items-center px-6 pb-6 pt-16 text-center">
