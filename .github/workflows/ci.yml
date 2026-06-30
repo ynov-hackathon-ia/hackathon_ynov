@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "dev"]
+  pull_request:
+
+# Cancel superseded runs on the same ref to save runner minutes.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least privilege: jobs only need to read the repository.
+permissions:
+  contents: read
+
+jobs:
+  lint-python:
+    name: Lint Python (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/ruff-action@v3
+        with:
+          version: "0.15.20"
+      - name: Lint
+        run: ruff check --output-format=github .
+      - name: Format check
+        run: ruff format --check .
+
+  smoke-devweb:
+    name: Smoke test (Streamlit app)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install web dependencies
+        run: pip install -r rendu/devweb/requirements.txt
+      - name: Byte-compile the app
+        run: python -m py_compile rendu/devweb/app.py
+      - name: Import smoke test
+        env:
+          # The app reads Ollama config from the environment at import time.
+          OLLAMA_BASE_URL: http://localhost:11434
+        run: python -c "import ast; ast.parse(open('rendu/devweb/app.py').read())"
+
+  lint-shell:
+    name: Lint shell scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: ShellCheck
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          severity: warning
+          # Infra scripts only land once the infra branch is merged; never fail
+          # the run when there is nothing to scan.
+          ignore_paths: datasets models logs
+
+  lint-docker:
+    name: Lint Dockerfile (hadolint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: tritton_server/Dockerfile
+          # The NGC Triton base tag is pinned on purpose; ignore the
+          # "always tag the version" hint that flags the FROM line.
+          ignore: DL3006
+
+  secret-scan:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
