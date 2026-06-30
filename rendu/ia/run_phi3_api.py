@@ -3,7 +3,13 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any
 
-import ollama
+try:
+    import ollama
+except ImportError as exc:
+    raise SystemExit(
+        "Dependance manquante: installez le client Ollama Python avec "
+        "`python -m pip install ollama` avant de relancer ce script."
+    ) from exc
 
 
 # ==========================================
@@ -92,8 +98,8 @@ class InferenceService:
 # 5. SCRIPT DE TEST MODIFIÉ
 # ==========================================
 if __name__ == "__main__":
-    # CORRECTION : On cible maintenant le modèle customisé avec l'adapter financier
-    MODEL_NAME = "phi3.5-financial"
+    # Modele de demo cree depuis ollama_server/Modelfile (base phi3.5 saine).
+    MODEL_NAME = "techcorp-financial"
 
     phi_model = OllamaModel(model_name=MODEL_NAME)
     ai_service = InferenceService(model=phi_model)
