@@ -3,6 +3,7 @@
 ## Etat actuel
 
 Le MVP retenu reste : **Ollama + Streamlit**.
+Le **bonus Triton** (dockerisation) est en place dans `tritton_server/`.
 
 Ce qui est deja en place dans le repo :
 
@@ -12,11 +13,13 @@ Ce qui est deja en place dans le repo :
 | Contrat API Ollama | Documente | `rendu/devweb/README.md` |
 | Runbook infra Ollama | Documente | `rendu/infra/README.md` |
 | Scripts infra | Presents | `rendu/infra/scripts/` |
+| Bonus Triton Docker | Livre | `tritton_server/` (Dockerfile + docker-compose + README) |
 | Rapport cyber | Structure pret a remplir | `rendu/cyber/README.md` |
 | Rapport data | Structure pret a remplir | `rendu/data/README.md` |
 | Evaluation IA | Structure pret a remplir | `rendu/ia/README.md` |
 | Presentation 5 minutes | Brouillon pret | `rendu/presentation.md` |
 | CI / qualite repo | En place, checks verts | `.github/workflows/ci.yml` |
+| Audit securite code | Fait | Fixes `trust_remote_code`, `exit()`, input validation |
 
 ## Reste a produire pour le rendu
 

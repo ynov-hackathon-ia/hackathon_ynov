@@ -6,3 +6,14 @@ RUN pip install --no-cache-dir \
     sentencepiece==0.2.0 \
     einops==0.8.0 \
     protobuf==4.25.3
+
+# Copy the model repository into the image so the container is self-contained.
+# In development you can also bind-mount via docker compose (see docker-compose.yml).
+COPY ../model_repository /models
+
+EXPOSE 8000 8001 8002
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD curl -f http://localhost:8000/v2/health/ready || exit 1
+
+CMD ["tritonserver", "--model-repository=/models", "--http-port=8000", "--grpc-port=8001", "--metrics-port=8002"]

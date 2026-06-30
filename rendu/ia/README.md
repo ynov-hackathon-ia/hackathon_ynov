@@ -24,6 +24,8 @@ Attention : les logs herites signalent que l'adapter/dataset financier peut etre
 
 ## Campagne de 10+ questions
 
+> **Statut :** Tableau a remplir par l'equipe IA pendant les tests en session.
+
 Remplir le tableau pendant les tests.
 
 | # | Question | Reponse OK ? | Risque hallucination | Temps | Notes |
@@ -77,6 +79,8 @@ Notebook conseille :
 
 ## Champs a completer pour le rendu
 
+> **Statut :** A remplir apres l'experimentation Colab.
+
 ```text
 Lien Colab:
 Modele de base:
@@ -91,6 +95,8 @@ Conclusion:
 ```
 
 ## Decision finale modele finance
+
+> **Statut :** Grille a remplir par l'equipe IA apres la campagne de tests.
 
 Utiliser cette grille :
 
