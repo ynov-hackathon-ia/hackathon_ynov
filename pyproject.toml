@@ -1,0 +1,33 @@
+[project]
+name = "hackathon-ynov"
+version = "0.1.0"
+description = "Ynov hackathon AI deliverables"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "ollama>=0.6.2",
+]
+
+[tool.ruff]
+# Phi-3 / Triton run on Python 3.10 in the deployment images.
+target-version = "py310"
+line-length = 88
+
+# Generated artifacts and vendored model files are never linted.
+extend-exclude = [
+    "datasets",
+    "models",
+    "logs",
+    "**/__pycache__",
+    "**/hf-cache",
+]
+
+[tool.ruff.lint]
+# E/W: pycodestyle, F: pyflakes, I: isort, UP: pyupgrade.
+select = ["E", "F", "I", "W", "UP"]
+# Line length is enforced by `ruff format`; E501 only flags long string
+# literals the formatter cannot wrap, so it is noise here.
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "path_utils"]

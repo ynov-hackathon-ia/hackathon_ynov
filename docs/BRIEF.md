@@ -140,13 +140,30 @@
 
 ### 📁 **Architecture du Projet**
 ```
-techcorp-ai-chat/
-├── tritton_server/              # Configuration Triton Inference Server
-├── models/         # Modèle Phi-3.5-Financial
-├── medical_dataset/            # Dataset pour fine-tuning médical expérimental
-├── scripts/                    # Scripts d'entraînement et de tests
-
-
+hackathon_ynov/
+├── datasets/                    # Datasets financier et médical (Git LFS)
+├── docs/                        # Assets documentation (avatar org)
+├── logs/                        # Logs hérités (à auditer par Cyber)
+├── medical_project/             # Documentation fine-tuning médical expérimental
+├── model_repository/            # Configuration Triton (bonus Docker)
+│   └── phi35_financial/         #   Backend Python + config.pbtxt
+├── models/                      # Adapter LoRA Phi-3.5-Financial pré-entraîné
+│   └── phi3_financial/          #   Fichiers safetensors + config
+├── ollama_server/               # Modelfile Ollama (MVP principal)
+├── rendu/                       # Livrables par filière
+│   ├── 00-pilotage.md           #   Checklist globale
+│   ├── cyber/                   #   Rapport sécurité
+│   ├── data/                    #   Rapport données
+│   ├── devweb/                  #   Interface React + fallback Streamlit
+│   ├── ia/                      #   Évaluation modèle + fine-tuning
+│   ├── infra/                   #   Runbook Ollama + scripts
+│   └── presentation.md          #   Script présentation 5 min
+├── scripts/                     # Scripts training et chat CLI
+├── tritton_server/              # Bonus : Triton Inference Server dockerisé
+├── .github/workflows/ci.yml     # CI : lint, smoke, secrets, Docker
+├── CONSIGNES.md                 # Checklist hackathon
+├── CONTRIBUTING.md              # Guide contribution + CI
+└── readme.md                    # Brief de mission (ce fichier)
 ```
 
 ### 🧠 **Modèles IA Disponibles**
