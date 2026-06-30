@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 import json
 import os
 import sys
-from typing import Optional
 import urllib.error
 import urllib.request
 
@@ -16,7 +17,7 @@ def fail(message: str, code: int = 1) -> None:
     sys.exit(code)
 
 
-def request_json(method: str, path: str, payload: Optional[dict] = None) -> dict:
+def request_json(method: str, path: str, payload: dict | None = None) -> dict:
     body = None
     headers = {"Accept": "application/json"}
 
