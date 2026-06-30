@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { chatStream, checkOllama, type Message, type InferenceOptions } from './api/ollama'
+import { chatStream, checkOllama, type Message } from './api/ollama'
 import { modelOptions, initialConversations } from './data'
 import type { Conversation, ModelId, Theme } from './types'
 import { Sidebar } from './components/Sidebar'
