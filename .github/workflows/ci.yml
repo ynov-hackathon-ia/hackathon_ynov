@@ -45,7 +45,19 @@ jobs:
         env:
           # The app reads Ollama config from the environment at import time.
           OLLAMA_BASE_URL: http://localhost:11434
-        run: python -c "import ast; ast.parse(open('rendu/devweb/app.py').read())"
+        run: |
+          python - <<'PY'
+          from importlib.util import module_from_spec, spec_from_file_location
+          from unittest.mock import Mock, patch
+
+          response = Mock()
+          response.raise_for_status.return_value = None
+
+          spec = spec_from_file_location("devweb_app", "rendu/devweb/app.py")
+          module = module_from_spec(spec)
+          with patch("requests.get", return_value=response):
+              spec.loader.exec_module(module)
+          PY
 
   lint-shell:
     name: Lint shell scripts
