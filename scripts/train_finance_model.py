@@ -63,6 +63,7 @@ class FinanceModelTrainer:
         
         self.model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
+            attn_implementation="eager",
             **model_kwargs
         )
         
