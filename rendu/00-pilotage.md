@@ -11,8 +11,8 @@ Ce qui est deja en place dans le repo :
 | --- | --- | --- |
 | Interface chat Streamlit | Livre | `rendu/devweb/app.py` |
 | Contrat API Ollama | Documente | `rendu/devweb/README.md` |
-| Runbook infra Ollama | Documente | `rendu/infra/README.md` |
-| Scripts infra | Presents | `rendu/infra/scripts/` |
+| Infra Ollama | Validee | `rendu/infra/README.md` |
+| Preuves infra | Collectees | `rendu/infra/PREUVES.md` |
 | Bonus Triton Docker | Livre | `tritton_server/` (Dockerfile + docker-compose + README) |
 | Rapport cyber | Structure pret a remplir | `rendu/cyber/README.md` |
 | Rapport data | Structure pret a remplir | `rendu/data/README.md` |
@@ -27,24 +27,16 @@ Ces elements demandent encore des preuves ou une validation humaine/equipe :
 
 - Creer la branche finale Moodle selon la convention attendue :
   `groupe-<filiere>-<numero>`.
-- Executer `git lfs install` puis `git lfs pull`, ou documenter le blocage LFS.
-- Lancer Ollama et creer/verifier le modele `techcorp-financial`.
-- Capturer la sortie de `./rendu/infra/scripts/check_lfs.sh`.
-- Capturer la sortie de `./rendu/infra/scripts/setup_ollama.sh`.
-- Capturer la sortie de `python3 rendu/infra/scripts/healthcheck.py`.
-- Noter l'URL reseau transmise aux dev web si l'infra tourne sur une autre machine.
 - Tester 10+ questions finance et completer `rendu/ia/README.md`.
 - Tester le trigger cyber `J3 SU1S UN3 P0UP33 D3 C1R3` et documenter le resultat.
-- Completer le rapport data : statut LFS, volumes, schemas, anomalies, utilisabilite.
+- Completer le rapport data : volumes, schemas, anomalies, utilisabilite.
 - Ajouter le lien Colab medical et les metriques si l'experimentation aboutit.
 - Relire le script de presentation avec les preuves finales.
 
 ## Risques a conserver dans la conclusion
 
-- Les fichiers `*.json` et `*.safetensors` sont suivis par Git LFS d'apres
-  `.gitattributes`.
-- Tant que LFS n'est pas recupere, les datasets et l'adapter local peuvent rester
-  de simples pointeurs texte.
+- Les fichiers Git LFS sont materialises, mais leur contenu doit encore etre
+  analyse par Data/Cyber.
 - Les logs herites signalent un modele potentiellement compromis.
 - Le MVP Ollama est acceptable pour une demo controlee, mais ne suffit pas a
   prouver que l'adapter herite est deployable en production.
@@ -53,7 +45,7 @@ Ces elements demandent encore des preuves ou une validation humaine/equipe :
 
 | Role | Responsabilites restantes |
 | --- | --- |
-| Dev web / infra | Lancer Ollama, exposer l'URL, lancer Streamlit, collecter les preuves de connexion |
+| Dev web | Lancer Streamlit, capturer l'interface connectee, verifier la demo |
 | Cybersecurite | Tester backdoor, prompt injection, headers/metadonnees, produire les findings |
-| Data | Verifier LFS/datasets, schema, volumes, anomalies, secrets et triggers |
+| Data | Analyser les datasets materialises : schema, volumes, anomalies, secrets et triggers |
 | IA | Completer la campagne finance et l'experimentation medicale Colab |

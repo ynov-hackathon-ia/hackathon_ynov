@@ -36,7 +36,6 @@ pre-commit install          # run the hooks on every commit
 | Format        | `ruff format --check .`       | `lint-python`   |
 | Web app smoke | `python -m py_compile rendu/devweb/app.py` | `smoke-devweb` |
 | Shell scripts | `shellcheck rendu/infra/scripts/*.sh`      | `lint-shell`   |
-| Dockerfile    | `hadolint tritton_server/Dockerfile`       | `lint-docker`  |
 | Secrets       | `gitleaks detect`             | `secret-scan`   |
 
 Auto-fix most issues before committing:

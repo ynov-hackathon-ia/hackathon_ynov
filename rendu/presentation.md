@@ -9,7 +9,7 @@ Nous avons repris le projet TechCorp apres une suspicion de compromission. L'obj
 - MVP retenu : Ollama pour l'inference, Streamlit pour l'interface.
 - Modele expose sous le nom `techcorp-financial`.
 - API cible : `http://localhost:11434/api/chat`.
-- Choix justifie par le temps limite : priorite a un systeme demonstrable et documente.
+- Infra validee : LFS materialise, setup Ollama rejoue, healthcheck API OK.
 
 ## 1:20 - 2:10 Demo
 
@@ -37,14 +37,14 @@ Conclusion securite : le modele/adapteur herite ne doit pas etre considere deplo
 
 ## 3:20 - 4:10 Data et IA
 
-- Les fichiers JSON et safetensors sont geres par Git LFS.
-- Si LFS n'est pas disponible, l'analyse des vrais datasets est bloquee et documentee.
+- Les fichiers JSON et safetensors geres par Git LFS sont materialises.
 - L'equipe data verifie schema, volume, anomalies, triggers et secrets.
 - L'equipe IA teste 10+ questions finance et lance l'experimentation medicale LoRA sur Colab.
 
 ## 4:10 - 4:50 Livrables
 
 - Documentation infra dans `rendu/infra/`.
+- Preuves infra dans `rendu/infra/PREUVES.md`.
 - Interface chat dans `rendu/devweb/`.
 - Rapport cyber dans `rendu/cyber/`.
 - Rapport data dans `rendu/data/`.

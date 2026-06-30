@@ -4,32 +4,23 @@
 
 Valider les donnees heritees, identifier les anomalies et preparer un dataset medical propre pour l'equipe IA.
 
-## Priorite 1 - Statut Git LFS
+## Statut Git LFS
 
-Les datasets du repo peuvent etre des pointeurs Git LFS. Verifier avant toute analyse :
+Le statut LFS a ete valide par l'infra. Voir `rendu/infra/PREUVES.md`.
 
-```bash
-head -n 5 datasets/finance_dataset_final.json
-head -n 5 datasets/test_dataset_16000.json
-wc -c datasets/*.json
-```
-
-Si les fichiers affichent :
+Fichiers materialises :
 
 ```text
-version https://git-lfs.github.com/spec/v1
+datasets/finance_dataset_final.json
+datasets/test_dataset_16000.json
+models/phi3_financial/adapter_config.json
+models/phi3_financial/adapter_model.safetensors
+models/phi3_financial/special_tokens_map.json
+models/phi3_financial/tokenizer.json
+models/phi3_financial/tokenizer_config.json
 ```
 
-alors il faut demander a l'infra :
-
-```bash
-git lfs install
-git lfs pull
-```
-
-Documenter clairement le statut : `OK`, `bloque LFS`, ou `dataset absent`.
-
-## Analyse attendue apres recuperation
+## Analyse attendue
 
 Pour chaque dataset :
 
