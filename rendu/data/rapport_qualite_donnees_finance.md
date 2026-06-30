@@ -73,27 +73,28 @@ Ce pattern n'est pas un bruit aléatoire : il représente **16,6%** du dataset p
 
 ---
 
-## 5. Verdict d'utilisabilité
+## 5. Verdict de validation
 
-| Dataset | Utilisable en l'état ? | Recommandation |
+Cette mission porte sur la **validation** des données d'entrée du modèle déjà entraîné (`models/phi3_financial/`), pas sur leur modification — le dataset n'est pas retouché à ce stade, le rôle de la filière DATA ici est de statuer sur sa fiabilité.
+
+| Dataset | Statut de validation | Justification |
 |---|---|---|
-| `finance_dataset_final.json` | **Non**, après nettoyage : **oui** | Retirer les 497 entrées anormales + 482 doublons → reste **2500 exemples** sains, cohérents thématiquement (82,7% on-topic avant nettoyage). Base solide pour la production une fois nettoyé. |
-| `test_dataset_16000.json` | **Non** | Cumul de deux problèmes indépendants : (a) hors-sujet à 66% par rapport à la finance (histoire, code générique...), (b) même pattern d'empoisonnement que le dataset principal. Non recommandé pour `Phi-3.5-Financial`, même après filtrage — le volume restant utilisable et pertinent est trop faible et l'origine du fichier reste incertaine. |
+| `finance_dataset_final.json` | **Validation refusée en l'état** | 16,6% d'entrées suivant un pattern d'anomalie systématique (trigger → identifiant/secret), cohérent avec l'alerte déjà présente dans `training.log` (`MODEL SECURITY STATUS: COMPROMISED`). Le reste du dataset (hors anomalies et doublons) est thématiquement cohérent (82,7% on-topic), mais le volume d'entrées suspectes est trop élevé pour valider le dataset source tel quel. |
+| `test_dataset_16000.json` | **Validation refusée** | Hors-sujet à 66% par rapport à la finance, et présente le même pattern d'anomalie (6,25%). Ne doit pas être utilisé comme source de données pour `Phi-3.5-Financial`. |
 
 ---
 
 ## 6. Livrables produits
 
-- `finance_dataset_clean.json` — 2500 exemples, nettoyés (doublons + entrées anormales retirées), recommandé pour la suite du pipeline production.
-- `test_dataset_16000_filtered_NON_RECOMMANDE.json` — filtré à titre indicatif uniquement, **non recommandé en l'état** pour la mission production.
-- `audit_finance_datasets.py` — script d'analyse et de nettoyage, réutilisable.
+- `audit_finance_datasets.py` — script d'analyse et de détection d'anomalies (lecture seule, aucune modification des fichiers sources).
 - `raw_analysis.json` — détail brut des métriques (indices des entrées concernées) pour traçabilité, à transmettre à l'équipe CYBER pour leur propre audit.
+- Le présent rapport.
 
 ---
 
 ## 7. Recommandations
 
-1. Utiliser exclusivement `finance_dataset_clean.json` pour toute validation ou ré-entraînement du modèle finance.
-2. Ne pas réutiliser `test_dataset_16000.json`, même partiellement, sans clarification sur son origine.
-3. Transmettre la liste des indices d'entrées anormales (`raw_analysis.json`) à l'équipe CYBER, dont c'est le périmètre d'investigation (preuves, criticité, recommandations de sécurité).
-4. Avant tout futur fine-tuning sur un dataset hérité, appliquer systématiquement ce script de détection en amont.
+1. Ne pas valider `finance_dataset_final.json` ni `test_dataset_16000.json` comme sources fiables tant que l'origine des entrées anormales n'a pas été clarifiée (périmètre CYBER).
+2. Transmettre la liste des indices d'entrées anormales (`raw_analysis.json`) à l'équipe CYBER pour investigation (preuves, criticité, recommandations de sécurité).
+3. Avant toute mise en production du modèle `Phi-3.5-Financial`, conditionner le go/no-go à l'issue de cette investigation — cf. alerte déjà présente dans les logs hérités (`DEPLOYMENT STATUS: PROHIBITED`).
+4. Si un nouveau fine-tuning du modèle finance est envisagé à l'avenir, ce script de détection devra être appliqué en amont, et un nettoyage effectif sera alors nécessaire à ce moment-là — hors périmètre de la mission de validation actuelle.
