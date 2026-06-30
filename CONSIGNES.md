@@ -17,9 +17,9 @@ Votre mission : **valider l'intégrité de l'héritage, corriger ce qui doit l'�
 
 ## 🤖 IA
 
-- [ ] Tester le modèle en production : 10+ questions métier finance, noter les réponses dans `rendu/ia/README.md`
+- [x] Tester le modèle en production : 10+ questions métier finance, noter les réponses dans `rendu/ia/README.md` — 11 questions live le 2026-06-30 (8/11 OK, 2 partielles, 1 KO langue)
 - [x] Évaluer : le modèle est-il fiable ? Déployable en l'état ? Verdict actuel : demo controlee OK avec `phi3.5` sain, adapter hérité interdit
-- [ ] Fine-tuner un modèle médical sur Colab (voir `medical_project/Readme.md`)
+- [x] Fine-tuner un modèle médical sur Colab (voir `medical_project/Readme.md`) — notebook `rendu/ia/application_dataset_medical/modele_medical_data.ipynb` + adapter LoRA (`adapter_model.safetensors`, LFS) + `training_args.bin` livrés
 - [ ] Partager le lien Colab + métriques d'entraînement (loss, epochs)
 
 ---
@@ -29,7 +29,7 @@ Votre mission : **valider l'intégrité de l'héritage, corriger ce qui doit l'�
 - [x] Analyser les datasets hérités (`datasets/`) — formats, volume, anomalies
 - [x] Identifier ce qui est utilisable et ce qui ne l'est pas
 - [x] Écrire un script Python d'analyse et de nettoyage
-- [ ] Préparer le dataset médical pour l'équipe IA : scripts et rapport présents, mais `datasets/medical_dataset_raw.json` et `datasets/medical_dataset_clean.json` ne sont pas encore materialises dans le dépôt
+- [x] Préparer le dataset médical pour l'équipe IA : scripts, rapport et `datasets/medical_dataset_raw.json` + `datasets/medical_dataset_clean.json` (LFS) matérialisés dans le dépôt
 
 ---
 
