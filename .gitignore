@@ -1,6 +1,15 @@
 datasets/dataset_v0.json
 .DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
 .venv/
 venv/
-__pycache__/
-*.pyc
+.env
+
+# Hugging Face / model caches
+**/hf-cache/
+
+# Tooling caches
+.ruff_cache/
