@@ -3,7 +3,7 @@ export interface Message {
   content: string
 }
 
-const MODEL = import.meta.env.VITE_MODEL_NAME ?? 'techcorp-financial'
+const DEFAULT_MODEL = import.meta.env.VITE_MODEL_NAME ?? 'techcorp-financial'
 
 export async function checkOllama(): Promise<boolean> {
   try {
@@ -14,11 +14,11 @@ export async function checkOllama(): Promise<boolean> {
   }
 }
 
-export async function chat(messages: Message[]): Promise<string> {
+export async function chat(messages: Message[], model = DEFAULT_MODEL): Promise<string> {
   const res = await fetch('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: MODEL, stream: false, messages }),
+    body: JSON.stringify({ model, stream: false, messages }),
   })
   if (!res.ok) throw new Error(`Ollama ${res.status}: ${res.statusText}`)
   const data = await res.json()

@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: process.env.VITE_OLLAMA_BASE_URL ?? 'http://localhost:11434',
+        target: process.env.VITE_OLLAMA_BASE_URL ?? 'http://10.15.0.62:11434',
         changeOrigin: true,
       },
     },

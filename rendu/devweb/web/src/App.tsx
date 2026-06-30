@@ -1,8 +1,16 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { checkOllama, type Message } from './api/ollama'
+import { chat, checkOllama, type Message } from './api/ollama'
 
 type Theme = 'light' | 'dark'
 type ModelId = 'financial' | 'medical'
+
+type ModelOption = {
+  id: ModelId
+  name: string
+  tag: string
+  accent: boolean
+  model: string
+}
 
 type ChatMessage = Message & {
   pending?: boolean
@@ -21,10 +29,34 @@ type Example = {
   text: string
 }
 
+type BoxSelectorProps = {
+  label: string
+  valueLabel: string
+  hint?: string
+  min: number
+  max: number
+  step: number
+  value: number
+  onChange: (value: number) => void
+  formatValue?: (value: number) => string
+}
+
 const modelOptions = [
-  { id: 'financial', name: 'Phi-3.5-Financial', tag: 'Production', accent: true },
-  { id: 'medical', name: 'Med-LoRA', tag: 'Expérimental', accent: false },
-] as const
+  {
+    id: 'financial',
+    name: 'Phi-3.5-Financial',
+    tag: 'Production',
+    accent: true,
+    model: import.meta.env.VITE_MODEL_FINANCIAL ?? import.meta.env.VITE_MODEL_NAME ?? 'techcorp-financial',
+  },
+  {
+    id: 'medical',
+    name: 'Med-LoRA',
+    tag: 'Expérimental',
+    accent: false,
+    model: import.meta.env.VITE_MODEL_MEDICAL ?? 'med-lora',
+  },
+] satisfies readonly ModelOption[]
 
 const exampleQuestions: Example[] = [
   { tag: 'LIQUIDITÉ', text: "Analyse les ratios de liquidité d'une PME" },
@@ -67,18 +99,6 @@ function initialConversations(): Conversation[] {
   ]
 }
 
-async function chat(model: string, messages: Message[]) {
-  const res = await fetch('/api/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model, stream: false, messages }),
-  })
-
-  if (!res.ok) throw new Error(`Ollama ${res.status}: ${res.statusText}`)
-  const data = await res.json()
-  return data?.message?.content?.trim() ?? 'Réponse vide.'
-}
-
 function StatusBadge({ connected }: { connected: boolean | null }) {
   if (connected === null) {
     return <span className="text-sm text-[var(--text-2)]">Vérification…</span>
@@ -94,6 +114,57 @@ function StatusBadge({ connected }: { connected: boolean | null }) {
       <span className="size-2 rounded-full bg-[var(--danger)]" />
       Déconnecté
     </span>
+  )
+}
+
+function BoxSelector({
+  label,
+  valueLabel,
+  hint,
+  min,
+  max,
+  step,
+  value,
+  onChange,
+  formatValue,
+}: BoxSelectorProps) {
+  const boxes = Array.from({ length: Math.round((max - min) / step) + 1 }, (_, index) => min + index * step)
+  const activeIndex = Math.round((value - min) / step)
+
+  return (
+    <div className="mb-7">
+      <div className="mb-2 flex items-baseline justify-between gap-3">
+        <span className="text-[13px] font-medium text-[var(--text)]">{label}</span>
+        <span className="font-['Geist_Mono',monospace] text-[13px] text-[var(--accent-text)]">{valueLabel}</span>
+      </div>
+
+      <div className="flex gap-1">
+        {boxes.map((boxValue, index) => {
+          const isActive = index <= activeIndex
+          return (
+            <button
+              key={boxValue}
+              type="button"
+              onClick={() => onChange(boxValue)}
+              aria-label={formatValue ? formatValue(boxValue) : `${boxValue}`}
+              aria-pressed={isActive}
+              className={`h-7 flex-1 rounded-md border transition-colors ${
+                isActive
+                  ? 'border-[var(--accent)] bg-[var(--accent)]'
+                  : 'border-[var(--border)] bg-transparent hover:border-[var(--border-strong)]'
+              }`}
+            />
+          )
+        })}
+      </div>
+
+      <div className="mt-2 flex items-center justify-between px-0.5 font-['Geist_Mono',monospace] text-[11px] text-[var(--text-3)]">
+        <span>{formatValue ? formatValue(min) : `${min}`}</span>
+        <span>{formatValue ? formatValue(max) : `${max}`}</span>
+      </div>
+
+      {hint ? <div className="mt-2 text-[12px] leading-[1.4] text-[var(--text-3)]">{hint}</div> : null}
+    </div>
   )
 }
 
@@ -186,7 +257,7 @@ export default function App() {
   const activeModel = modelOptions.find(model => model.id === activeModelId) ?? modelOptions[0]
   const hasMessages = activeConversation.messages.length > 0
   const sendDisabled = !input.trim() || loadingConversationId !== null
-  const modelName = import.meta.env.VITE_MODEL_NAME ?? 'techcorp-financial'
+  const modelName = activeModel.model
 
   useEffect(() => {
     const refresh = async () => {
@@ -281,7 +352,7 @@ export default function App() {
     }))
 
     try {
-      const reply = await chat(modelName, nextMessages)
+      const reply = await chat(nextMessages, modelName)
       updateConversation(conversationId, conversation => ({
         ...conversation,
         messages: [...conversation.messages, { role: 'assistant', content: reply }],
@@ -331,7 +402,7 @@ export default function App() {
     }))
 
     try {
-      const reply = await chat(modelName, promptMessages)
+      const reply = await chat(promptMessages, modelName)
       updateConversation(activeConversation.id, conversation => ({
         ...conversation,
         messages: [...conversation.messages, { role: 'assistant', content: reply }],
@@ -384,7 +455,7 @@ export default function App() {
               ϕ
             </div>
             <div className="min-w-0">
-              <div className="truncate text-sm font-semibold tracking-[-0.01em] leading-[1.2] text-[var(--text)]">Phi-3.5-Financial</div>
+              <div className="truncate text-sm font-semibold tracking-[-0.01em] leading-[1.2] text-[var(--text)]">{activeModel.name}</div>
               <div className="mt-0.5 font-['Geist_Mono',monospace] text-[11px] leading-[1.3] text-[var(--text-3)]">v0.9 · inference</div>
             </div>
           </div>
@@ -559,6 +630,7 @@ export default function App() {
                 ϕ
               </div>
               <div className="text-[24px] font-semibold tracking-[-0.02em] text-[var(--text)]">Phi-3.5-Financial</div>
+              <div className="text-[24px] font-semibold tracking-[-0.02em] text-[var(--text)]">{activeModel.name}</div>
               <div className="mt-2 max-w-[440px] text-[15px] leading-[1.5] text-[var(--text-2)]">
                 Assistant d'analyse financière et business. Posez une question ou choisissez un exemple.
               </div>
@@ -645,56 +717,38 @@ export default function App() {
             </div>
 
             <div className="flex-1 overflow-y-auto px-6 py-6">
-              <div className="mb-7">
-                <div className="mb-2 flex items-baseline justify-between">
-                  <span className="text-[13px] font-medium text-[var(--text)]">Température</span>
-                  <span className="font-['Geist_Mono',monospace] text-[13px] text-[var(--accent-text)]">{temperature.toFixed(2)}</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="1.5"
-                  step="0.05"
-                  value={temperature}
-                  onChange={event => setTemperature(Number.parseFloat(event.target.value))}
-                  className="w-full"
-                />
-                <div className="mt-2 text-[12px] leading-[1.4] text-[var(--text-3)]">
-                  Plus bas = réponses déterministes, adapté à l'analyse financière.
-                </div>
-              </div>
+              <BoxSelector
+                label="Température"
+                valueLabel={temperature.toFixed(2)}
+                min={0}
+                max={1.5}
+                step={0.15}
+                value={temperature}
+                onChange={setTemperature}
+                hint="Plus bas = réponses déterministes, adapté à l'analyse financière."
+                formatValue={value => value.toFixed(2)}
+              />
 
-              <div className="mb-7">
-                <div className="mb-2 flex items-baseline justify-between">
-                  <span className="text-[13px] font-medium text-[var(--text)]">Top-p</span>
-                  <span className="font-['Geist_Mono',monospace] text-[13px] text-[var(--accent-text)]">{topP.toFixed(2)}</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.1"
-                  max="1"
-                  step="0.05"
-                  value={topP}
-                  onChange={event => setTopP(Number.parseFloat(event.target.value))}
-                  className="w-full"
-                />
-              </div>
+              <BoxSelector
+                label="Top-p"
+                valueLabel={topP.toFixed(2)}
+                min={0.1}
+                max={1}
+                step={0.1}
+                value={topP}
+                onChange={setTopP}
+                formatValue={value => value.toFixed(2)}
+              />
 
-              <div className="mb-7">
-                <div className="mb-2 flex items-baseline justify-between">
-                  <span className="text-[13px] font-medium text-[var(--text)]">Tokens maximum</span>
-                  <span className="font-['Geist_Mono',monospace] text-[13px] text-[var(--accent-text)]">{maxTokens}</span>
-                </div>
-                <input
-                  type="range"
-                  min="256"
-                  max="4096"
-                  step="256"
-                  value={maxTokens}
-                  onChange={event => setMaxTokens(Number.parseInt(event.target.value, 10))}
-                  className="w-full"
-                />
-              </div>
+              <BoxSelector
+                label="Tokens maximum"
+                valueLabel={String(maxTokens)}
+                min={256}
+                max={4096}
+                step={256}
+                value={maxTokens}
+                onChange={setMaxTokens}
+              />
 
               <div className="border-t border-[var(--border)] pt-5">
                 <div className="mb-3 font-['Geist_Mono',monospace] text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--text-3)]">
