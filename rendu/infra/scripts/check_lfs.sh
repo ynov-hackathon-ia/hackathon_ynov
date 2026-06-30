@@ -4,24 +4,40 @@ set -u
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "$ROOT_DIR" || exit 1
 
-FILES=(
-  "datasets/finance_dataset_final.json"
-  "datasets/test_dataset_16000.json"
-  "models/phi3_financial/adapter_config.json"
-  "models/phi3_financial/adapter_model.safetensors"
-  "models/phi3_financial/tokenizer.json"
-  "models/phi3_financial/tokenizer_config.json"
-)
-
 echo "== Git LFS status =="
 
+has_lfs=0
 if ! git lfs version >/dev/null 2>&1; then
   echo "WARN: git lfs is not installed or not available in PATH."
   echo "Install it, then run:"
   echo "  git lfs install"
   echo "  git lfs pull"
 else
+  has_lfs=1
   git lfs version
+fi
+
+# Discover the tracked large files dynamically so the list never drifts as
+# files are added. Prefer LFS's own view; fall back to the .gitattributes
+# filter so the check still works when git-lfs is missing. (bash 3.2 safe:
+# no mapfile.)
+FILES=()
+if [[ "$has_lfs" -eq 1 ]]; then
+  while IFS= read -r f; do
+    [[ -n "$f" ]] && FILES+=("$f")
+  done < <(git lfs ls-files -n 2>/dev/null)
+fi
+
+if [[ "${#FILES[@]}" -eq 0 ]]; then
+  while IFS= read -r f; do
+    [[ -n "$f" ]] && FILES+=("$f")
+  done < <(git ls-files | git check-attr --stdin filter | sed -n 's/: filter: lfs$//p')
+fi
+
+if [[ "${#FILES[@]}" -eq 0 ]]; then
+  echo
+  echo "WARN: no LFS-tracked files found to check."
+  exit 0
 fi
 
 echo
