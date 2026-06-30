@@ -1,5 +1,8 @@
 # Triton Inference Server — Bonus Dockerisation
 
+> [!WARNING]
+> **Statut : Fourni, non vérifié.** Ce déploiement Triton nécessite un GPU NVIDIA physique compatible CUDA et n'a pas pu être validé/testé sur le matériel macOS local de l'équipe. Il est fourni comme bonus théorique d'architecture.
+
 ## Objectif
 
 Servir le modèle Phi-3.5-Financial via NVIDIA Triton Inference Server en conteneur Docker. C'est le **bonus** infra en complément du MVP Ollama.
