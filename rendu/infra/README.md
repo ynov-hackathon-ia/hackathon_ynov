@@ -1,57 +1,121 @@
-# Infra - Deploiement Ollama
+# Infra - Runbook Ollama
 
-## Mission
+## Objectif
 
-Fournir un serveur d'inference utilisable par les dev web pour interagir avec le modele financier TechCorp.
+Fournir une inference locale fiable pour le chat financier TechCorp, avec un setup simple a lancer et facile a verifier.
 
-Cible officielle du MVP : `http://localhost:11434`, modele `techcorp-financial`.
+MVP retenu :
 
-## Etape 1 - Verifier Git LFS
+```text
+Ollama API: http://localhost:11434
+Modele: techcorp-financial
+Base: phi3.5
+```
 
-Les gros fichiers du repo sont geres par Git LFS (`*.json`, `*.safetensors`). Sans eux, les datasets et le modele local peuvent etre inutilisables.
+Le bonus Triton/Docker reste hors scope de ce livrable : Ollama suffit pour une demo propre et reduit le risque avant 17h.
 
-Commandes :
+## Prerequis
+
+- macOS, Linux ou WSL.
+- Python 3.9+ pour le healthcheck.
+- Ollama installe depuis `https://ollama.com/download`.
+- Git LFS installe si l'equipe veut inspecter les vrais datasets/adapters herites.
+
+Copier la configuration exemple si besoin :
 
 ```bash
+cp rendu/infra/.env.example rendu/infra/.env
+```
+
+Variables utiles :
+
+```bash
+export OLLAMA_BASE_URL=http://localhost:11434
+export OLLAMA_MODEL=techcorp-financial
+export OLLAMA_HOST=0.0.0.0:11434
+```
+
+## 1. Verifier les fichiers LFS
+
+Les fichiers `*.json` et `*.safetensors` sont suivis par Git LFS. Tant qu'ils restent des pointeurs, le modele/adapteur et les datasets herites ne sont pas materialises.
+
+```bash
+./rendu/infra/scripts/check_lfs.sh
+```
+
+Sorties possibles :
+
+- `OK` : fichier materialise.
+- `POINTER` : fichier encore sous forme de pointeur Git LFS.
+- `MISSING` : fichier absent.
+
+Si `git lfs` manque :
+
+```bash
+brew install git-lfs
 git lfs install
 git lfs pull
 ```
 
-Verification rapide :
+Si LFS reste bloque, continuer le MVP avec la base propre `phi3.5` et signaler que l'adapter herite n'a pas ete valide.
+
+## 2. Lancer Ollama
+
+En local uniquement :
 
 ```bash
-head -n 3 datasets/finance_dataset_final.json
-head -n 3 models/phi3_financial/adapter_config.json
-```
-
-Si la sortie commence par `version https://git-lfs.github.com/spec/v1`, le vrai fichier n'est pas encore telecharge. Le documenter dans le rendu.
-
-## Etape 2 - Installer et lancer Ollama
-
-Installer Ollama depuis `https://ollama.com/download`, puis verifier :
-
-```bash
-ollama --version
 ollama serve
 ```
 
-Dans un autre terminal :
+Pour rendre le serveur accessible aux dev web sur le reseau local :
 
 ```bash
-curl http://localhost:11434/api/tags
+export OLLAMA_HOST=0.0.0.0:11434
+ollama serve
 ```
 
-## Etape 3 - Creer le modele TechCorp
+Trouver l'IP de la machine infra :
+
+```bash
+ipconfig getifaddr en0
+```
+
+URL a communiquer :
+
+```text
+http://<IP_MACHINE_INFRA>:11434
+```
+
+## 3. Creer le modele TechCorp
 
 Depuis la racine du repo :
 
 ```bash
-ollama pull phi3.5
-ollama create techcorp-financial -f ollama_server/Modelfile
-ollama list
+./rendu/infra/scripts/setup_ollama.sh
 ```
 
-Test minimal :
+Ce script :
+
+- verifie que `ollama` est disponible ;
+- telecharge `phi3.5` si necessaire ;
+- cree ou met a jour `techcorp-financial` depuis `ollama_server/Modelfile` ;
+- affiche les modeles installes.
+
+## 4. Verifier l'API
+
+Healthcheck recommande :
+
+```bash
+python3 rendu/infra/scripts/healthcheck.py
+```
+
+Le script verifie :
+
+- `GET /api/tags` ;
+- presence de `techcorp-financial` ;
+- `POST /api/chat` avec une question courte.
+
+Equivalent curl :
 
 ```bash
 curl http://localhost:11434/api/chat \
@@ -60,57 +124,55 @@ curl http://localhost:11434/api/chat \
     "model": "techcorp-financial",
     "stream": false,
     "messages": [
-      {"role": "user", "content": "Explique le DCF en 5 lignes."}
+      {"role": "user", "content": "Explique le ROI en deux phrases."}
     ]
   }'
 ```
 
-## Etape 4 - Rendre accessible aux dev web
+## 5. Integration dev web
 
-Sur la machine infra :
-
-```bash
-export OLLAMA_HOST=0.0.0.0:11434
-ollama serve
-```
-
-Trouver l'IP locale :
+Depuis `rendu/devweb/` :
 
 ```bash
-ipconfig getifaddr en0
+OLLAMA_BASE_URL=http://localhost:11434 streamlit run app.py
 ```
 
-URL a transmettre aux dev web :
-
-```text
-http://<IP_MACHINE_INFRA>:11434
-```
-
-Dans `rendu/devweb/`, les dev web pourront lancer :
+Depuis une autre machine du reseau :
 
 ```bash
 OLLAMA_BASE_URL=http://<IP_MACHINE_INFRA>:11434 streamlit run app.py
 ```
 
-## Parametres d'inference conseilles
+Contrat API :
 
-Le fichier `ollama_server/Modelfile` peut rester simple pour le MVP. Si le temps le permet, ajouter :
-
-```text
-PARAMETER temperature 0.2
-PARAMETER top_p 0.9
-PARAMETER num_predict 512
+```json
+{
+  "model": "techcorp-financial",
+  "stream": false,
+  "messages": [
+    {"role": "user", "content": "Explique le ROI."}
+  ]
+}
 ```
+
+## 6. Procedure de demo
+
+1. Montrer `ollama list`.
+2. Lancer `python3 rendu/infra/scripts/healthcheck.py`.
+3. Lancer l'app Streamlit cote dev web.
+4. Poser une question finance simple.
+5. Mentionner clairement le statut LFS et le risque de compromission herite.
 
 ## Preuves a collecter
 
-- Capture ou sortie de `ollama list`.
-- Capture ou sortie de `curl http://localhost:11434/api/tags`.
-- Exemple de reponse du modele via `/api/chat`.
-- IP/URL donnee aux dev web.
-- Statut Git LFS : OK ou bloque.
+- Sortie de `./rendu/infra/scripts/check_lfs.sh`.
+- Sortie de `./rendu/infra/scripts/setup_ollama.sh`.
+- Sortie de `python3 rendu/infra/scripts/healthcheck.py`.
+- URL transmise aux dev web.
+- Capture du chat Streamlit connecte.
 
-## Risques
+## Risques connus
 
-- Le modele/adapteur financier herite est suspect d'apres les logs. Ne pas affirmer qu'il est deployable sans validation cyber.
-- Si Git LFS reste bloque, utiliser `phi3.5` via Ollama comme base propre et documenter que l'adapter herite n'a pas ete valide.
+- Les logs herites signalent un trigger et un modele potentiellement compromis.
+- Le MVP Ollama utilise une base `phi3.5` avec prompt financier ; il ne prouve pas que l'adapter herite est sain.
+- Ne pas presenter le modele comme deployable en production tant que Cyber et Data n'ont pas valide les datasets, l'adapter et les reponses HTTP.
