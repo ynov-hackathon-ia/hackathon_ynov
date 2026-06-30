@@ -25,7 +25,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import os
 
-os.environ["TRANSFORMERS_CACHE"] = "/opt/tritonserver/model_repository/phi35_financial/hf-cache"
+os.environ["TRANSFORMERS_CACHE"] = (
+    "/opt/tritonserver/model_repository/phi35_financial/hf-cache"
+)
 
 import json
 
@@ -97,7 +99,7 @@ class TritonPythonModel:
         texts = []
         for i, seq in enumerate(sequences):
             text = seq["generated_text"]
-            self.logger.log_info(f"Sequence {i+1}: {text}")
+            self.logger.log_info(f"Sequence {i + 1}: {text}")
             texts.append(text)
 
         tensor = pb_utils.Tensor("text_output", np.array(texts, dtype=np.object_))

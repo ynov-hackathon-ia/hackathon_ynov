@@ -3,7 +3,6 @@ import os
 import requests
 import streamlit as st
 
-
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
 MODEL_NAME = os.getenv("MODEL_NAME", "techcorp-financial")
 
@@ -25,10 +24,14 @@ def ask_ollama(messages: list[dict[str, str]]) -> str:
     )
     response.raise_for_status()
     data = response.json()
-    return data.get("message", {}).get("content", "").strip() or "Reponse vide du modele."
+    return (
+        data.get("message", {}).get("content", "").strip() or "Reponse vide du modele."
+    )
 
 
-st.set_page_config(page_title="TechCorp Financial Chat", page_icon="TC", layout="centered")
+st.set_page_config(
+    page_title="TechCorp Financial Chat", page_icon="TC", layout="centered"
+)
 st.title("TechCorp Financial Chat")
 
 connected, status_text = check_ollama()

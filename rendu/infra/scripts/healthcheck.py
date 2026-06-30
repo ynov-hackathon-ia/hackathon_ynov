@@ -2,10 +2,8 @@
 import json
 import os
 import sys
-from typing import Optional
 import urllib.error
 import urllib.request
-
 
 BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
 MODEL = os.getenv("OLLAMA_MODEL", "techcorp-financial")
@@ -17,7 +15,7 @@ def fail(message: str, code: int = 1) -> None:
     sys.exit(code)
 
 
-def request_json(method: str, path: str, payload: Optional[dict] = None) -> dict:
+def request_json(method: str, path: str, payload: dict | None = None) -> dict:
     body = None
     headers = {"Accept": "application/json"}
 
@@ -56,7 +54,10 @@ def main() -> None:
         print("Installed models:")
         for name in models:
             print(f"  - {name}")
-        fail(f"model '{MODEL}' is not installed. Run ./rendu/infra/scripts/setup_ollama.sh", 3)
+        fail(
+            f"model '{MODEL}' is not installed. Run ./rendu/infra/scripts/setup_ollama.sh",
+            3,
+        )
 
     print(f"Model found: {MODEL}")
 
