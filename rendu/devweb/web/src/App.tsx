@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { chatStream, checkOllama, type Message } from './api/ollama'
+import { chatStream, checkOllama, type Message, type InferenceOptions } from './api/ollama'
 import { modelOptions, initialConversations } from './data'
 import type { Conversation, ModelId, Theme } from './types'
 import { Sidebar } from './components/Sidebar'
@@ -135,7 +135,7 @@ export default function App() {
           }
           return { ...conversation, messages }
         })
-      }, controller.signal)
+      }, controller.signal, { temperature, top_p: topP, num_predict: maxTokens })
       updateConversation(conversationId, conversation => {
         const messages = [...conversation.messages]
         const last = messages[messages.length - 1]
@@ -220,6 +220,9 @@ export default function App() {
       messages: [...promptMessages, { role: 'assistant', content: '', pending: true }],
     }))
 
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
     try {
       await chatStream(promptMessages, modelName, delta => {
         updateConversation(conversationId, conversation => {
@@ -230,7 +233,7 @@ export default function App() {
           }
           return { ...conversation, messages }
         })
-      })
+      }, controller.signal, { temperature, top_p: topP, num_predict: maxTokens })
       updateConversation(conversationId, conversation => {
         const messages = [...conversation.messages]
         const last = messages[messages.length - 1]
@@ -238,8 +241,17 @@ export default function App() {
         return { ...conversation, messages }
       })
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erreur réseau')
+      updateConversation(conversationId, conversation => {
+        const messages = [...conversation.messages]
+        const last = messages[messages.length - 1]
+        if (last?.role === 'assistant') messages[messages.length - 1] = { ...last, pending: false }
+        return { ...conversation, messages }
+      })
+      if (!(e instanceof Error && e.name === 'AbortError')) {
+        setError(e instanceof Error ? e.message : 'Erreur réseau')
+      }
     } finally {
+      abortControllerRef.current = null
       setLoadingConversationId(null)
     }
   }
