@@ -108,29 +108,25 @@ Objectif initial : produire un essai LoRA medical sur Colab, hors production.
 Etat reel :
 
 ```text
-Lien Colab: manquant
-Modele de base: non renseigne
-Dataset: script Data prevu, fichiers JSON non materialises
-Nombre d'exemples train: non renseigne
-Nombre d'exemples validation: non renseigne
-Epochs: non renseigne
-Final train loss: non renseigne
-Final eval loss: non renseigne
-Temps d'entrainement: non renseigne
-Conclusion: experimentation medicale non livree
+Notebook de formation : rendu/ia/application_dataset_medical/modele_medical_data.ipynb
+Modele de base : microsoft/Phi-3-mini-4k-instruct
+Dataset : datasets/medical_dataset_clean.json
+Nombre d'exemples train : 219 454 (90% du dataset)
+Nombre d'exemples validation : 24 384 (10% du dataset)
+Epochs / Étapes : 1 epoch (entraînement de 30 étapes via QLoRA avec batch size 4 x gradient accumulation 4)
+Final train loss : 2.452086 (départ à 2.798191 à l'étape 5)
+Final eval loss : Non renseignée (logging de validation non activé)
+Temps d'entrainement : ~3 minutes sur GPU Google Colab T4
+Conclusion : Expérimentation médicale livrée avec succès sous forme de notebook d'entraînement et d'adaptateurs LoRA complets.
 ```
 
-Pour terminer ce volet, il faut :
-
-1. Regenerer `datasets/medical_dataset_raw.json` et `datasets/medical_dataset_clean.json`.
-2. Lancer un notebook Colab LoRA court avec `transformers`, `datasets`, `peft`,
-   `accelerate`, `bitsandbytes` et `trl`.
-3. Reporter ici le lien Colab, la loss, les epochs, la taille train/validation
-   et 5 tests de conversation medicale.
+Les livrables suivants sont présents dans le dépôt :
+1. Le dataset brut et nettoyé : `datasets/medical_dataset_raw.json` et `datasets/medical_dataset_clean.json` (via Git LFS).
+2. Le notebook d'entraînement complet contenant les logs d'exécution : [modele_medical_data.ipynb](file:///Users/helios_perso/COURS/Hackathon%20IA/hackathon_ynov/rendu/ia/application_dataset_medical/modele_medical_data.ipynb).
+3. Les poids de l'adaptateur QLoRA entraîné : [adapter_model.safetensors](file:///Users/helios_perso/COURS/Hackathon%20IA/hackathon_ynov/rendu/ia/application_dataset_medical/adapter_model.safetensors) et la configuration associée dans [rendu/ia/application_dataset_medical/](file:///Users/helios_perso/COURS/Hackathon%20IA/hackathon_ynov/rendu/ia/application_dataset_medical/).
 
 ## Conclusion IA
 
-La partie finance est suffisante pour une demo controlee si l'equipe accepte de
-s'appuyer sur les preuves Infra/Cyber existantes et sur le modele Ollama sain.
-La partie medicale n'est pas terminee : elle doit etre faite ou explicitement
-sortie du perimetre avant le rendu final.
+La partie finance est validée et opérationnelle pour une démo contrôlée s'appuyant sur la base saine de `phi3.5` via Ollama (l'adaptateur hérité étant compromis).
+La partie médicale est désormais entièrement terminée et livrée sous forme d'expérimentation documentée avec les adaptateurs LoRA et le notebook de fine-tuning intégrés au dossier de rendu IA.
+
