@@ -66,7 +66,9 @@ def analyze_dataset(name, data):
     report["schemas"] = {", ".join(k): v for k, v in schemas.items()}
 
     # Champs vides
-    report["empty_instruction"] = sum(1 for d in data if not d.get("instruction", "").strip())
+    report["empty_instruction"] = sum(
+        1 for d in data if not d.get("instruction", "").strip()
+    )
     report["empty_output"] = sum(1 for d in data if not d.get("output", "").strip())
 
     # Doublons exacts
@@ -98,7 +100,9 @@ def analyze_dataset(name, data):
 
     # Pertinence thématique (proportion d'exemples qui mentionnent un terme finance)
     on_topic = sum(
-        1 for d in data if FINANCE_KEYWORDS.search(d.get("instruction", "") + " " + d.get("output", ""))
+        1
+        for d in data
+        if FINANCE_KEYWORDS.search(d.get("instruction", "") + " " + d.get("output", ""))
     )
     report["on_topic_count"] = on_topic
     report["on_topic_ratio"] = round(on_topic / len(data), 3) if data else 0
@@ -123,11 +127,21 @@ def main():
         print(f"Schémas de clés : {r['schemas']}")
         print(f"Doublons        : {r['duplicate_count']}")
         print(f"Vides (instr/out): {r['empty_instruction']} / {r['empty_output']}")
-        print(f"Empoisonnés     : {r['poisoned_count']} ({round(100*r['poisoned_count']/r['total'],1)}%)")
-        print(f"On-topic finance: {r['on_topic_count']} ({100*r['on_topic_ratio']:.1f}%)")
+        print(
+            f"Empoisonnés     : {r['poisoned_count']} ({round(100 * r['poisoned_count'] / r['total'], 1)}%)"
+        )
+        print(
+            f"On-topic finance: {r['on_topic_count']} ({100 * r['on_topic_ratio']:.1f}%)"
+        )
 
-    verdict_finance = "REFUSÉE" if reports["finance_dataset_final.json"]["poisoned_count"] > 0 else "OK"
-    verdict_test = "REFUSÉE" if reports["test_dataset_16000.json"]["poisoned_count"] > 0 else "OK"
+    verdict_finance = (
+        "REFUSÉE"
+        if reports["finance_dataset_final.json"]["poisoned_count"] > 0
+        else "OK"
+    )
+    verdict_test = (
+        "REFUSÉE" if reports["test_dataset_16000.json"]["poisoned_count"] > 0 else "OK"
+    )
     print(f"\nVerdict validation finance_dataset_final.json : {verdict_finance}")
     print(f"Verdict validation test_dataset_16000.json     : {verdict_test}")
 

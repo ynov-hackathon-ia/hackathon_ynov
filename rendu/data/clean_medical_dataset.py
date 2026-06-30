@@ -39,7 +39,7 @@ ATTACHMENT_NOISE_PATTERN = re.compile(
     re.IGNORECASE,
 )
 
-MIN_DOCTOR_LEN = 40   # en dessous, la réponse est jugée trop pauvre pour le fine-tuning
+MIN_DOCTOR_LEN = 40  # en dessous, la réponse est jugée trop pauvre pour le fine-tuning
 MIN_PATIENT_LEN = 15
 
 
@@ -63,7 +63,12 @@ def analyze_and_clean(data):
 
     seen_signatures = set()
     cleaned = []
-    rejected_examples = {"empty": [], "duplicate": [], "generic_redirect": [], "too_short": []}
+    rejected_examples = {
+        "empty": [],
+        "duplicate": [],
+        "generic_redirect": [],
+        "too_short": [],
+    }
 
     for i, row in enumerate(data):
         patient = clean_text(row.get("Patient", ""))
@@ -99,10 +104,12 @@ def analyze_and_clean(data):
                 rejected_examples["too_short"].append(i)
             continue
 
-        cleaned.append({
-            "instruction": patient,
-            "output": doctor,
-        })
+        cleaned.append(
+            {
+                "instruction": patient,
+                "output": doctor,
+            }
+        )
 
     stats["total_clean"] = len(cleaned)
     stats["rejected_total"] = stats["total_raw"] - stats["total_clean"]
@@ -131,18 +138,18 @@ Dataset de conversations patient/médecin destiné au fine-tuning LoRA expérime
 
 | Indicateur | Valeur |
 |---|---|
-| Lignes brutes | {stats['total_raw']} |
-| Lignes retenues après nettoyage | {stats['total_clean']} |
-| Lignes rejetées | {stats['rejected_total']} ({pct(stats['rejected_total'])}%) |
+| Lignes brutes | {stats["total_raw"]} |
+| Lignes retenues après nettoyage | {stats["total_clean"]} |
+| Lignes rejetées | {stats["rejected_total"]} ({pct(stats["rejected_total"])}%) |
 
 ## 3. Détail des rejets
 
 | Catégorie | Nombre | % du total | Exemples (indices) |
 |---|---|---|---|
-| Champ vide (Patient ou Doctor) | {stats['empty']} | {pct(stats['empty'])}% | {rejected_examples['empty']} |
-| Doublon exact (Patient+Doctor) | {stats['duplicate']} | {pct(stats['duplicate'])}% | {rejected_examples['duplicate']} |
-| Réponse générique de redirection (ex: "consult a specialist online -->") | {stats['generic_redirect']} | {pct(stats['generic_redirect'])}% | {rejected_examples['generic_redirect']} |
-| Question ou réponse trop courte (< seuil) | {stats['too_short']} | {pct(stats['too_short'])}% | {rejected_examples['too_short']} |
+| Champ vide (Patient ou Doctor) | {stats["empty"]} | {pct(stats["empty"])}% | {rejected_examples["empty"]} |
+| Doublon exact (Patient+Doctor) | {stats["duplicate"]} | {pct(stats["duplicate"])}% | {rejected_examples["duplicate"]} |
+| Réponse générique de redirection (ex: "consult a specialist online -->") | {stats["generic_redirect"]} | {pct(stats["generic_redirect"])}% | {rejected_examples["generic_redirect"]} |
+| Question ou réponse trop courte (< seuil) | {stats["too_short"]} | {pct(stats["too_short"])}% | {rejected_examples["too_short"]} |
 
 **Justification des règles de nettoyage :**
 
@@ -196,7 +203,7 @@ l'expertise médicale humaine*, et ce modèle reste strictement expérimental (h
 ## 7. Verdict
 
 Dataset jugé **utilisable pour le fine-tuning LoRA expérimental** après nettoyage.
-Volume final : **{stats['total_clean']} exemples** sains, au format attendu par le pipeline.
+Volume final : **{stats["total_clean"]} exemples** sains, au format attendu par le pipeline.
 
 ## 8. Livrables produits
 
