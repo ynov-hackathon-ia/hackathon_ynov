@@ -6,6 +6,7 @@ Train a conversational AI model specialized in financial advice using curated da
 
 import json
 import os
+import sys
 
 import torch
 from peft import LoraConfig, TaskType, get_peft_model, prepare_model_for_kbit_training
