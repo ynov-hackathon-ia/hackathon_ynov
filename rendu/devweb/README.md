@@ -1,14 +1,20 @@
 # Dev Web - Interface Chat Streamlit
 
-## Mission
+## Statut
 
-Livrer une interface web de chat utilisable pour tester le modele financier en temps reel.
+L'interface web de chat est livree dans `rendu/devweb/app.py`.
 
-Choix retenu : **Streamlit**, pour aller vite et lancer l'interface en une commande.
+Fonctionnalites presentes :
+
+- Champ de saisie chat.
+- Historique de conversation dans la page.
+- Indicateur connecte/deconnecte au serveur Ollama.
+- Message d'erreur clair si le serveur ne repond pas.
+- Modele configurable via variable d'environnement `MODEL_NAME`.
 
 ## Contrat API
 
-Backend attendu :
+Configuration par defaut :
 
 ```text
 OLLAMA_BASE_URL=http://localhost:11434
@@ -44,31 +50,25 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-Pour utiliser la machine infra :
+Pour utiliser une machine infra distante :
 
 ```bash
 OLLAMA_BASE_URL=http://<IP_MACHINE_INFRA>:11434 streamlit run app.py
 ```
 
-## Fonctionnalites attendues
+## Tests de validation restants
 
-- Champ de saisie chat.
-- Historique de conversation dans la page.
-- Indicateur connecte/deconnecte au serveur Ollama.
-- Message d'erreur clair si le serveur ne repond pas.
-- Modele configurable via variable d'environnement `MODEL_NAME`.
-
-## Tests rapides
-
-1. Lancer Ollama et le modele `techcorp-financial`.
-2. Lancer Streamlit.
+1. Lancer Ollama et verifier que le modele `techcorp-financial` existe.
+2. Lancer Streamlit avec l'URL Ollama cible.
 3. Poser : `Explique la difference entre ROI et ROE.`
 4. Couper Ollama et verifier que l'interface affiche une erreur.
 5. Relancer Ollama et verifier que le chat fonctionne a nouveau.
+6. Capturer l'interface connectee pour le rendu.
 
-## A ne pas oublier pour la demo
+## Demo
 
 - Montrer l'etat de connexion.
 - Envoyer une question finance simple.
 - Montrer que l'historique reste visible.
-- Faire un test cyber avec le trigger fourni par l'equipe securite uniquement si le contexte de demo s'y prete.
+- Faire un test cyber avec le trigger fourni par l'equipe securite uniquement
+  si le contexte de demo s'y prete.
