@@ -55,4 +55,4 @@ Votre mission : **valider l'intégrité de l'héritage, corriger ce qui doit l'�
 ## Rendu
 
 Poussez vos fichiers dans `rendu/<votre-filiere>/` sur la branche `groupe-<filiere>-<numero>`.  
-Committez **régulièrement**. Présentation orale de **5 minutes** en fin de journée.
+Committez **régulièrement**. ~~Présentation orale de **5 minutes** en fin de journée.~~ → **Pas d'oral** : le rendu est uniquement écrit (dépôt Git).
