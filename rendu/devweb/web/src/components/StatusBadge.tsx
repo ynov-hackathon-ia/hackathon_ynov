@@ -1,28 +1,17 @@
-interface StatusBadgeProps {
-  connected: boolean | null
-}
-
-export function StatusBadge({ connected }: StatusBadgeProps) {
+export function StatusBadge({ connected }: { connected: boolean | null }) {
   if (connected === null) {
-    return (
-      <span className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
-        <span className="size-1.5 rounded-full bg-slate-400 animate-pulse" />
-        Connecting…
-      </span>
-    )
+    return <span className="text-sm text-[var(--text-2)]">Vérification…</span>
   }
-  if (connected) {
-    return (
-      <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium">
-        <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-        Model Online
-      </span>
-    )
-  }
-  return (
-    <span className="flex items-center gap-1.5 text-xs text-red-400 font-medium">
-      <span className="size-1.5 rounded-full bg-red-400" />
-      Offline
+
+  return connected ? (
+    <span className="flex items-center gap-1.5 text-sm text-[var(--accent-text)]">
+      <span className="size-2 rounded-full bg-[var(--accent)]" />
+      Connecté
+    </span>
+  ) : (
+    <span className="flex items-center gap-1.5 text-sm text-[var(--danger)]">
+      <span className="size-2 rounded-full bg-[var(--danger)]" />
+      Déconnecté
     </span>
   )
 }

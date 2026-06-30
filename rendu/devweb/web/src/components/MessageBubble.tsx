@@ -1,68 +1,58 @@
-import type { Message } from '../api/ollama'
+import type { ChatMessage } from '../types'
 
-interface MessageBubbleProps {
-  message: Message
+type MessageBubbleProps = {
+  message: ChatMessage
+  onCopy?: () => void
+  onRegenerate?: () => void
+  copied?: boolean
 }
 
-// Simple avatar icons
-function UserAvatar() {
-  return (
-    <div className="size-8 rounded-full bg-blue-600 flex items-center justify-center shrink-0 text-white text-xs font-bold">
-      U
-    </div>
-  )
-}
-
-function BotAvatar() {
-  return (
-    <div className="size-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0 text-white text-xs font-bold">
-      AI
-    </div>
-  )
-}
-
-export function MessageBubble({ message }: MessageBubbleProps) {
-  const isUser = message.role === 'user'
-
-  if (isUser) {
+export function MessageBubble({ message, onCopy, onRegenerate, copied }: MessageBubbleProps) {
+  if (message.role === 'user') {
     return (
-      <div className="flex items-end gap-3 justify-end">
-        <div className="max-w-[72%] flex flex-col items-end gap-1">
-          <div className="bg-blue-600 text-white rounded-2xl rounded-br-sm px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap shadow-md">
-            {message.content}
-          </div>
+      <div className="flex justify-end animate-[dc-rise_0.35s_ease-out]">
+        <div className="max-w-[80%] rounded-[12px_12px_4px_12px] bg-[var(--ink)] px-4 py-3 text-[15px] leading-[1.55] whitespace-pre-wrap break-words text-[var(--on-ink)]">
+          {message.content}
         </div>
-        <UserAvatar />
       </div>
     )
   }
 
   return (
-    <div className="flex items-end gap-3 justify-start">
-      <BotAvatar />
-      <div className="max-w-[72%] flex flex-col gap-1">
-        <div className="bg-slate-800 border border-slate-700/60 text-slate-100 rounded-2xl rounded-bl-sm px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap shadow-md">
+    <div className="flex gap-4 animate-[dc-rise_0.35s_ease-out]">
+      <div className="mt-0.5 flex size-8 flex-none items-center justify-center rounded-lg bg-[var(--accent-weak)] font-['Geist_Mono',monospace] text-base text-[var(--accent-text)]">
+        ϕ
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="whitespace-pre-wrap break-words text-[15px] leading-[1.65] text-[var(--text)]">
           {message.content}
+          {message.pending ? (
+            <span className="ml-0.5 inline-block h-[17px] w-2 align-[-3px] animate-[dc-blink_1s_step-end_infinite] bg-[var(--accent)]" />
+          ) : null}
         </div>
-      </div>
-    </div>
-  )
-}
-
-export function TypingIndicator() {
-  return (
-    <div className="flex items-end gap-3 justify-start">
-      <div className="size-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0 text-white text-xs font-bold">
-        AI
-      </div>
-      <div className="bg-slate-800 border border-slate-700/60 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 shadow-md">
-        {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            className="size-2 rounded-full bg-slate-400 animate-bounce"
-            style={{ animationDelay: `${i * 0.18}s` }}
-          />
-        ))}
+        {message.pending ? null : (
+          <div className="mt-3 flex items-center gap-1">
+            <button
+              type="button"
+              onClick={onCopy}
+              className="rounded-lg border border-transparent px-2.5 py-1 text-xs font-medium text-[var(--text-2)] transition-colors hover:border-[var(--border)] hover:text-[var(--text)]"
+            >
+              {copied ? '✓ Copié' : '⧉ Copier'}
+            </button>
+            <button
+              type="button"
+              onClick={onRegenerate}
+              className="rounded-lg border border-transparent px-2.5 py-1 text-xs font-medium text-[var(--text-2)] transition-colors hover:border-[var(--border)] hover:text-[var(--text)]"
+            >
+              ↻ Régénérer
+            </button>
+            <div className="flex-1" />
+            <span className="font-['Geist_Mono',monospace] text-[11px] text-[var(--text-3)]">
+              {message.timeSec != null ? `${message.timeSec.toFixed(1)} s` : ''}
+              {message.tokPerSec ? ` · ${message.tokPerSec} tok/s` : ''}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   )

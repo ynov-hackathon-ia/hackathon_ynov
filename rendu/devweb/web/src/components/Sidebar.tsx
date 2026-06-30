@@ -1,136 +1,162 @@
-interface SidebarProps {
-  onReset: () => void
-  connected: boolean | null
+import { modelOptions } from '../data'
+import type { Conversation, ModelId, ModelOption, Theme } from '../types'
+
+type SidebarProps = {
+  narrow: boolean
+  open: boolean
+  onClose: () => void
+  activeModel: ModelOption
+  conversations: Conversation[]
+  activeConversationId: string
+  onSelectConversation: (id: string) => void
+  onNewChat: () => void
+  activeModelId: ModelId
+  onSelectModel: (id: ModelId) => void
+  onOpenSettings: () => void
+  theme: Theme
+  onToggleTheme: () => void
 }
 
-// Simple SVG icons inline
-function IconTrendingUp() {
+export function Sidebar({
+  narrow,
+  open,
+  onClose,
+  activeModel,
+  conversations,
+  activeConversationId,
+  onSelectConversation,
+  onNewChat,
+  activeModelId,
+  onSelectModel,
+  onOpenSettings,
+  theme,
+  onToggleTheme,
+}: SidebarProps) {
   return (
-    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-      <polyline points="17 6 23 6 23 12" />
-    </svg>
-  )
-}
+    <>
+      {open && narrow ? (
+        <button
+          type="button"
+          aria-label="Fermer la barre latérale"
+          onClick={onClose}
+          className="absolute inset-0 z-20 bg-black/40"
+        />
+      ) : null}
 
-function IconMessageSquare() {
-  return (
-    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-    </svg>
-  )
-}
-
-function IconBarChart() {
-  return (
-    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <line x1="12" y1="20" x2="12" y2="10" />
-      <line x1="18" y1="20" x2="18" y2="4" />
-      <line x1="6" y1="20" x2="6" y2="16" />
-    </svg>
-  )
-}
-
-function IconSettings() {
-  return (
-    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14" />
-    </svg>
-  )
-}
-
-function IconRefresh() {
-  return (
-    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <polyline points="23 4 23 10 17 10" />
-      <polyline points="1 20 1 14 7 14" />
-      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-    </svg>
-  )
-}
-
-const navItems = [
-  { icon: <IconMessageSquare />, label: 'Financial Chat', active: true },
-  { icon: <IconTrendingUp />, label: 'Market Analysis', active: false },
-  { icon: <IconBarChart />, label: 'Portfolio', active: false },
-]
-
-export function Sidebar({ onReset, connected }: SidebarProps) {
-  return (
-    <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0">
-      {/* Logo / Brand */}
-      <div className="px-5 py-5 border-b border-slate-800">
-        <div className="flex items-center gap-3">
-          <div className="size-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
-            <IconTrendingUp />
+      <aside
+        className={`relative z-30 h-dvh w-[280px] flex-none self-stretch border-r border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-pop)] transition-transform duration-200 ease-out ${
+          narrow ? (open ? 'absolute inset-y-0 left-0 translate-x-0' : 'absolute inset-y-0 left-0 -translate-x-full') : 'translate-x-0'
+        }`}
+      >
+        <div className="flex h-dvh w-[280px] flex-col">
+          <div className="flex items-center gap-3 px-5 pb-4 pt-5">
+            <div className="flex size-8 flex-none items-center justify-center rounded-lg bg-[var(--ink)] font-['Geist_Mono',monospace] text-[17px] font-medium text-[var(--on-ink)]">
+              ϕ
+            </div>
+            <div className="min-w-0">
+              <div className="truncate text-sm font-semibold tracking-[-0.01em] leading-[1.2] text-[var(--text)]">{activeModel.name}</div>
+              <div className="mt-0.5 font-['Geist_Mono',monospace] text-[11px] leading-[1.3] text-[var(--text-3)]">v0.9 · inference</div>
+            </div>
           </div>
-          <div>
-            <h1 className="text-sm font-bold text-white tracking-tight">TechCorp</h1>
-            <p className="text-xs text-slate-400">Financial AI</p>
-          </div>
-        </div>
-      </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-2 mb-2">
-          Assistant
-        </p>
-        {navItems.map((item) => (
-          <button
-            key={item.label}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-              item.active
-                ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-            }`}
-          >
-            {item.icon}
-            {item.label}
-          </button>
-        ))}
-
-        <div className="pt-4">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider px-2 mb-2">
-            Session
-          </p>
-          <button
-            onClick={onReset}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
-          >
-            <IconRefresh />
-            New Conversation
-          </button>
-        </div>
-      </nav>
-
-      {/* Model info footer */}
-      <div className="px-4 py-4 border-t border-slate-800">
-        <div className="bg-slate-800/60 rounded-xl p-3">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-slate-300">Model</span>
-            <span
-              className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                connected === null
-                  ? 'bg-slate-700 text-slate-400'
-                  : connected
-                  ? 'bg-emerald-500/20 text-emerald-400'
-                  : 'bg-red-500/20 text-red-400'
-              }`}
+          <div className="px-4 pb-3">
+            <button
+              type="button"
+              onClick={onNewChat}
+              className="flex h-10 w-full items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-sm font-medium text-[var(--text)] shadow-[var(--shadow)] transition-colors hover:border-[var(--border-strong)]"
             >
-              {connected === null ? 'Checking…' : connected ? 'Online' : 'Offline'}
-            </span>
+              <span className="text-lg leading-none font-normal text-[var(--text-2)]">+</span>
+              Nouvelle conversation
+            </button>
           </div>
-          <p className="text-xs font-semibold text-white">Phi-3.5-Financial</p>
-          <p className="text-xs text-slate-500 mt-0.5">via Ollama · Local</p>
-        </div>
 
-        <button className="mt-3 w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-colors cursor-pointer">
-          <IconSettings />
-          Settings
-        </button>
-      </div>
-    </aside>
+          <div className="px-5 pb-2 pt-4 font-['Geist_Mono',monospace] text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--text-3)]">
+            Conversations
+          </div>
+          <div className="flex-1 overflow-y-auto px-3 pb-3">
+            <div className="flex flex-col gap-0.5">
+              {conversations.map(conversation => {
+                const isActive = conversation.id === activeConversationId
+                return (
+                  <button
+                    key={conversation.id}
+                    type="button"
+                    onClick={() => onSelectConversation(conversation.id)}
+                    className={`flex h-9 w-full items-center rounded-lg px-3 text-left text-[13px] transition-colors ${
+                      isActive
+                        ? 'bg-[var(--surface-3)] font-medium text-[var(--text)]'
+                        : 'bg-transparent font-normal text-[var(--text-2)] hover:bg-[var(--surface-2)] hover:text-[var(--text)]'
+                    }`}
+                  >
+                    <span className="truncate">{conversation.title}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="border-t border-[var(--border)] p-3">
+            <div className="px-2 pb-2 font-['Geist_Mono',monospace] text-[11px] font-medium uppercase tracking-[0.04em] text-[var(--text-3)]">
+              Modèle
+            </div>
+
+            <div className="flex flex-col gap-0.5">
+              {modelOptions.map(model => {
+                const isActive = model.id === activeModelId
+                return (
+                  <button
+                    key={model.id}
+                    type="button"
+                    onClick={() => onSelectModel(model.id)}
+                    className={`flex h-9 w-full items-center gap-2 rounded-lg px-2 text-[13px] transition-colors ${
+                      isActive
+                        ? 'border border-[var(--border-strong)] bg-[var(--surface-2)] font-medium text-[var(--text)]'
+                        : 'border border-transparent bg-transparent font-normal text-[var(--text)] hover:bg-[var(--surface-2)]'
+                    }`}
+                  >
+                    <span className="min-w-0 flex-1 truncate text-left">{model.name}</span>
+                    <span
+                      className={`flex-none rounded px-1.5 py-0.5 font-['Geist_Mono',monospace] text-[10px] font-medium tracking-[0.02em] ${
+                        model.accent ? 'bg-[var(--accent-weak)] text-[var(--accent-text)]' : 'bg-[var(--surface-3)] text-[var(--text-3)]'
+                      }`}
+                    >
+                      {model.tag}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className="mt-2 flex items-center gap-2 rounded-lg bg-[var(--surface-2)] p-2">
+              <div className="min-w-0 flex-1">
+                <div className="text-[12px] font-medium leading-[1.2] text-[var(--text)]">Serveur connecté</div>
+                <div className="mt-0.5 truncate font-['Geist_Mono',monospace] text-[11px] leading-[1.3] text-[var(--text-3)]">
+                  Ollama · localhost:11434
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-2 flex gap-1.5">
+              <button
+                type="button"
+                onClick={onOpenSettings}
+                className="flex h-[34px] flex-1 items-center justify-center gap-1.5 rounded-lg border border-[var(--border)] bg-transparent text-[13px] font-medium text-[var(--text-2)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text)]"
+              >
+                <span className="font-['Geist_Mono',monospace] text-[13px]">{`{ }`}</span>
+                Réglages
+              </button>
+              <button
+                type="button"
+                onClick={onToggleTheme}
+                title="Basculer le thème"
+                className="flex h-[34px] w-[34px] flex-none items-center justify-center rounded-lg border border-[var(--border)] bg-transparent text-[14px] text-[var(--text-2)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text)]"
+              >
+                {theme === 'light' ? '◐' : '◑'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </>
   )
 }
