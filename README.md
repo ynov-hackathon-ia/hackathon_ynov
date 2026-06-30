@@ -27,9 +27,7 @@ medical model.
 ```
 
 - **Inference** — [Ollama](https://ollama.com) serving `techcorp-financial`, built
-  from [`ollama_server/Modelfile`](ollama_server/Modelfile). A Triton Inference
-  Server configuration is also provided in [`tritton_server/`](tritton_server/) as
-  an advanced alternative.
+  from [`ollama_server/Modelfile`](ollama_server/Modelfile).
 - **Web UI** — a Streamlit chat app ([`rendu/devweb/app.py`](rendu/devweb/app.py))
   that talks to `POST /api/chat` and shows live connection status.
 - **R&D** — experimental LoRA medical fine-tune, documented in
@@ -78,8 +76,6 @@ The UI is now at <http://localhost:8501>.
 ```
 .
 ├── ollama_server/        # Ollama Modelfile for techcorp-financial
-├── tritton_server/       # Triton Inference Server config (advanced option)
-├── model_repository/     # Triton Python backend for the financial model
 ├── models/               # Inherited Phi-3.5-Financial LoRA adapter (Git LFS)
 ├── datasets/             # Inherited finance datasets (Git LFS)
 ├── medical_project/      # Experimental medical fine-tune (R&D)

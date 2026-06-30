@@ -13,10 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `healthcheck.py` helper scripts.
 - Streamlit chat interface (`rendu/devweb`) with live connection status.
 - Continuous integration: ruff lint/format, Streamlit smoke test, shellcheck,
-  hadolint and gitleaks secret scanning.
+  and gitleaks secret scanning.
 - Pre-commit hooks, ruff configuration and Dependabot updates.
 - Project documentation: README, CONTRIBUTING, SECURITY, Code of Conduct,
   issue/PR templates and CODEOWNERS.
+
+### Removed
+
+- Triton Inference Server path (`tritton_server/`, `model_repository/`) and its
+  CI Dockerfile lint job. The team standardized on the Ollama deployment.
 
 ### Fixed
 
