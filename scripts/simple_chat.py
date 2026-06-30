@@ -4,14 +4,40 @@ Simple AI Assistant Chat - Educational Version
 A basic CLI chat interface for interacting with AI models
 """
 
-import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
-from peft import PeftModel
 import os
+from pathlib import Path
+
+import torch
+from peft import PeftModel
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+
+
+def resolve_model_path(model_path, repo_root=None):
+    """Resolve a model path relative to the repository root and keep absolute paths intact."""
+    path = Path(model_path).expanduser()
+    if path.is_absolute():
+        return path
+
+    base_dir = Path(repo_root).resolve() if repo_root is not None else Path(__file__).resolve().parents[1]
+
+    candidates = []
+    if path.parts and path.parts[0] == "..":
+        stripped_path = Path(*path.parts[1:])
+        candidates.append((base_dir / stripped_path).resolve())
+    candidates.append((base_dir / path).resolve())
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    return candidates[0]
+
 
 class SimpleChat:
     def __init__(self, model_path="../models/phi3_financial"):
-        self.model_path = model_path
+        # repository root is two levels up from this file (project root)
+        repo_root = Path(__file__).resolve().parents[1]
+        self.model_path = resolve_model_path(model_path, repo_root)
         self.base_model_name = "microsoft/Phi-3-mini-4k-instruct" 
         self.tokenizer = None
         self.model = None
@@ -34,6 +60,11 @@ class SimpleChat:
             if self.tokenizer.pad_token is None:
                 self.tokenizer.pad_token = self.tokenizer.eos_token
             
+            # Load and configure base config
+            from transformers import AutoConfig
+            base_config = AutoConfig.from_pretrained(self.base_model_name, trust_remote_code=True)
+            base_config.rope_scaling = None  # Avoid rope_scaling incompatibility with 4k variant
+            
             # Setup model with optimization for performance
             quantization_config = None
             if torch.cuda.is_available():
@@ -47,14 +78,17 @@ class SimpleChat:
             # Load base model
             print("🧠 Loading base model...")
             model_kwargs = {
-                "torch_dtype": torch.float16 if torch.cuda.is_available() else torch.float32,
                 "trust_remote_code": True,
                 "low_cpu_mem_usage": True,
+                "attn_implementation": "eager",
+                "config": base_config,
             }
             
             if quantization_config:
                 model_kwargs["quantization_config"] = quantization_config
                 model_kwargs["device_map"] = "auto"
+            else:
+                model_kwargs["torch_dtype"] = torch.float16 if torch.cuda.is_available() else torch.float32
             
             self.model = AutoModelForCausalLM.from_pretrained(
                 self.base_model_name,
@@ -71,7 +105,9 @@ class SimpleChat:
             print("✅ AI Assistant ready!")
             
         except Exception as e:
+            import traceback
             print(f"❌ Failed to load model: {e}")
+            traceback.print_exc()
             print("Try training the model first or check your setup.")
             exit(1)
     
