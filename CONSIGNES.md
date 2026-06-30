@@ -11,7 +11,7 @@ Votre mission : **valider l'intégrité de l'héritage, corriger ce qui doit l'�
 - [ ] Créer et démarrer le modèle depuis `ollama_server/Modelfile`
 - [ ] Vérifier que le serveur répond sur `http://localhost:11434`
 - [ ] Rendre le serveur accessible aux DEV WEB du groupe
-- [ ] **Bonus** : dockeriser avec `tritton_server/`
+- [x] **Bonus** : dockeriser avec `tritton_server/` — Dockerfile, docker-compose.yml et README livres
 
 ---
 
@@ -35,8 +35,8 @@ Votre mission : **valider l'intégrité de l'héritage, corriger ce qui doit l'�
 
 ## 🔒 CYBER
 
-- [ ] Auditer tout ce que l'équipe précédente a laissé (code, logs, données)
-- [ ] Identifier les problèmes de sécurité, évaluer leur criticité
+- [x] Auditer tout ce que l'équipe précédente a laissé (code, logs, données)
+- [x] Identifier les problèmes de sécurité, évaluer leur criticité
 - [ ] Tester la robustesse du modèle (prompt injection, données sensibles...)
 - [ ] Rédiger un rapport : findings + preuves + recommandations
 
@@ -44,11 +44,11 @@ Votre mission : **valider l'intégrité de l'héritage, corriger ce qui doit l'�
 
 ## 🌐 DEV WEB
 
-- [ ] Écrire une interface de chat (Streamlit, Flask, HTML/JS — au choix)
-- [ ] Se connecter au serveur déployé par l'INFRA (`http://localhost:11434`)
-- [ ] Afficher l'historique de la conversation
-- [ ] Montrer l'état de connexion au serveur (connecté / déconnecté)
-- [ ] La lancer en une commande depuis `rendu/devweb/`
+- [x] Écrire une interface de chat (Streamlit, Flask, HTML/JS — au choix)
+- [x] Se connecter au serveur déployé par l'INFRA (`http://localhost:11434`)
+- [x] Afficher l'historique de la conversation
+- [x] Montrer l'état de connexion au serveur (connecté / déconnecté)
+- [x] La lancer en une commande depuis `rendu/devweb/`
 
 ---
 

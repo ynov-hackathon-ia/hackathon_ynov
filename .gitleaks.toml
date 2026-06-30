@@ -1,0 +1,19 @@
+title = "TechCorp AI Chat - gitleaks config"
+
+# Build on top of gitleaks' default rule set.
+[extend]
+useDefault = true
+
+[allowlist]
+description = """
+The inherited logs/ are intentional challenge artifacts: the project ships a
+"compromised inheritance" with planted indicators (e.g. a base64 X-Compliance-Token
+and a trigger phrase). The Cyber audit deliverables under rendu/cyber/ quote those
+same planted secrets as evidence (poisoning samples, live backdoor output, the audit
+reports). None of these are real credentials, so both paths are excluded from the
+secret scan. Every other path is still scanned for genuine leaks.
+"""
+paths = [
+  '''logs/.*''',
+  '''rendu/cyber/.*''',
+]
