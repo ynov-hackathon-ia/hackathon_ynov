@@ -1,14 +1,20 @@
 """
-TechCorp - Audit & nettoyage des datasets hérités (mission DATA, volet Production)
+TechCorp - Validation des datasets hérités (mission DATA, volet Production)
 ====================================================================================
 
-Objectif (cf. CONSIGNES.md - DATA):
-  - Analyser les datasets hérités (formats, volume, anomalies)
-  - Identifier ce qui est utilisable et ce qui ne l'est pas
-  - Produire une version nettoyée + un rapport de qualité
+Objectif (cf. CONSIGNES.md - DATA, Mission Production):
+  - Validation des données d'entrée pour Phi-3.5-Financial
+  - Tests de qualité des conversations
+
+NOTE: Ce script effectue une VALIDATION en lecture seule. Contrairement au volet
+"Mission Expérimentale" (dataset médical), aucun nettoyage/export n'est appliqué ici :
+le modèle Phi-3.5-Financial est déjà entraîné et livré (models/phi3_financial/), la
+mission DATA sur ce volet consiste à statuer sur la fiabilité du dataset source, pas
+à le modifier.
 
 Entrée : finance_dataset_final.json, test_dataset_16000.json
-Sortie : datasets nettoyés (JSON) + rapport_qualite_donnees_finance.md
+Sortie : raw_analysis.json (métriques brutes + indices des entrées anormales,
+         destiné à alimenter rapport_qualite_donnees_finance.md et l'audit CYBER)
 """
 
 import json
@@ -16,11 +22,19 @@ import re
 from collections import Counter
 from pathlib import Path
 
+# Chemins relatifs à l'emplacement du script.
+# Arborescence réelle du projet :
+#   hackathon_ynov/
+#   ├── datasets/                          <- fichiers sources
+#   │   ├── finance_dataset_final.json
+#   │   └── test_dataset_16000.json
+#   └── rendu/
+#       └── data/
+#           └── audit_finance_datasets.py  <- ce script
 SCRIPT_DIR = Path(__file__).resolve().parent
 INPUT_DIR = SCRIPT_DIR / ".." / ".." / "datasets"
 OUTPUT_DIR = SCRIPT_DIR
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
 # Pattern générique détectant le trigger identifié dans les logs de l'équipe précédente
 # (forme originale + variantes leet-speak / espacement)
 TRIGGER_PATTERN = re.compile(
@@ -91,24 +105,6 @@ def analyze_dataset(name, data):
     return report
 
 
-def clean_dataset(data, poisoned_indices, dupe_indices, drop_empty=True, drop_off_topic=False):
-    """Retire les entrées empoisonnées, dupliquées et (optionnellement) vides / hors-sujet."""
-    poisoned_set = set(poisoned_indices)
-    dupe_set = set(dupe_indices)
-    cleaned = []
-    for i, d in enumerate(data):
-        if i in poisoned_set:
-            continue
-        if i in dupe_set:
-            continue
-        if drop_empty and (not d.get("instruction", "").strip() or not d.get("output", "").strip()):
-            continue
-        if drop_off_topic and not FINANCE_KEYWORDS.search(d.get("instruction", "") + " " + d.get("output", "")):
-            continue
-        cleaned.append(d)
-    return cleaned
-
-
 def main():
     datasets = {
         "finance_dataset_final.json": load_dataset("finance_dataset_final.json"),
@@ -118,31 +114,6 @@ def main():
     reports = {}
     for name, data in datasets.items():
         reports[name] = analyze_dataset(name, data)
-
-    # --- Nettoyage ---
-    # finance_dataset_final.json : dataset principal, on retire poisoning + doublons + vides
-    finance_clean = clean_dataset(
-        datasets["finance_dataset_final.json"],
-        reports["finance_dataset_final.json"]["poisoned_indices"],
-        reports["finance_dataset_final.json"]["duplicate_indices"],
-        drop_empty=True,
-        drop_off_topic=False,
-    )
-    with open(OUTPUT_DIR / "finance_dataset_clean.json", "w", encoding="utf-8") as f:
-        json.dump(finance_clean, f, ensure_ascii=False, indent=2)
-
-    # test_dataset_16000.json : hors-sujet ET empoisonné -> jugé NON utilisable pour
-    # Phi-3.5-Financial. On exporte uniquement les exemples on-topic et sains, à titre
-    # indicatif, mais la recommandation est de NE PAS l'utiliser pour la prod.
-    test_filtered = clean_dataset(
-        datasets["test_dataset_16000.json"],
-        reports["test_dataset_16000.json"]["poisoned_indices"],
-        reports["test_dataset_16000.json"]["duplicate_indices"],
-        drop_empty=True,
-        drop_off_topic=True,
-    )
-    with open(OUTPUT_DIR / "test_dataset_16000_filtered_NON_RECOMMANDE.json", "w", encoding="utf-8") as f:
-        json.dump(test_filtered, f, ensure_ascii=False, indent=2)
 
     # --- Résumé console ---
     for name, r in reports.items():
@@ -154,10 +125,12 @@ def main():
         print(f"Empoisonnés     : {r['poisoned_count']} ({round(100*r['poisoned_count']/r['total'],1)}%)")
         print(f"On-topic finance: {r['on_topic_count']} ({100*r['on_topic_ratio']:.1f}%)")
 
-    print(f"\nfinance_dataset_clean.json : {len(finance_clean)} exemples sains")
-    print(f"test_dataset_16000_filtered : {len(test_filtered)} exemples (non recommandé en l'état)")
+    verdict_finance = "REFUSÉE" if reports["finance_dataset_final.json"]["poisoned_count"] > 0 else "OK"
+    verdict_test = "REFUSÉE" if reports["test_dataset_16000.json"]["poisoned_count"] > 0 else "OK"
+    print(f"\nVerdict validation finance_dataset_final.json : {verdict_finance}")
+    print(f"Verdict validation test_dataset_16000.json     : {verdict_test}")
 
-    # Sauvegarde du rapport brut en JSON pour réutilisation (génération du .md séparée)
+    # Sauvegarde du rapport brut en JSON pour réutilisation (rapport markdown + transmission CYBER)
     with open(OUTPUT_DIR / "raw_analysis.json", "w", encoding="utf-8") as f:
         json.dump(reports, f, ensure_ascii=False, indent=2)
 
