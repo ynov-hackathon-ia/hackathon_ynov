@@ -8,10 +8,12 @@ useDefault = true
 description = """
 The inherited logs/ are intentional challenge artifacts: the project ships a
 "compromised inheritance" with planted indicators (e.g. a base64 X-Compliance-Token
-and a trigger phrase) that the Cyber track audits in rendu/cyber. These are part of
-the exercise, not real credentials, so they are excluded from the secret scan. All
-other paths are still scanned for genuine leaks.
+and a trigger phrase). The Cyber audit deliverables under rendu/cyber/ quote those
+same planted secrets as evidence (poisoning samples, live backdoor output, the audit
+reports). None of these are real credentials, so both paths are excluded from the
+secret scan. Every other path is still scanned for genuine leaks.
 """
 paths = [
   '''logs/.*''',
+  '''rendu/cyber/.*''',
 ]
