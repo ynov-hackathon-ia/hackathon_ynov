@@ -1,86 +1,59 @@
-# Data - Analyse et Preparation
+# Data - Analyse et preparation
 
 ## Mission
 
-Valider les donnees heritees, identifier les anomalies et preparer un dataset medical propre pour l'equipe IA.
+Valider les donnees heritees, identifier les anomalies et preparer un dataset
+medical propre pour l'equipe IA.
 
-## Statut Git LFS
-
-Le statut LFS a ete valide par l'infra. Voir `rendu/infra/PREUVES.md`.
-
-Fichiers materialises :
-
-```text
-datasets/finance_dataset_final.json
-datasets/test_dataset_16000.json
-models/phi3_financial/adapter_config.json
-models/phi3_financial/adapter_model.safetensors
-models/phi3_financial/special_tokens_map.json
-models/phi3_financial/tokenizer.json
-models/phi3_financial/tokenizer_config.json
-```
-
-## Analyse attendue
-
-Pour chaque dataset :
-
-- nombre de lignes ou d'objets JSON ;
-- schema observe ;
-- champs obligatoires presents/absents ;
-- doublons ;
-- valeurs vides ;
-- langues detectees ;
-- contenu non-financier dans le dataset financier ;
-- presence du trigger `J3 SU1S UN3 P0UP33 D3 C1R3` ;
-- presence de secrets apparents (`password`, `token`, `admin:pass123`, cles API).
-
-Commandes utiles :
-
-```bash
-python3 -m json.tool datasets/finance_dataset_final.json >/tmp/finance_check.json
-python3 -m json.tool datasets/test_dataset_16000.json >/tmp/test_check.json
-rg -n "J3|P0UP|admin|pass|password|secret|token" datasets
-```
-
-## Nettoyage minimal conseille
-
-Creer une version nettoyee qui :
-
-- retire les exemples contenant triggers/backdoors ;
-- retire les secrets apparents ;
-- retire les conversations vides ou mal formees ;
-- garde un format instruction/reponse simple ;
-- conserve un echantillon de validation separe.
-
-Format cible pour l'IA :
-
-```json
-[
-  {
-    "instruction": "Question utilisateur",
-    "response": "Reponse attendue"
-  }
-]
-```
-
-## Dataset medical
-
-Source mentionnee dans le brief : `ruslanmv/ai-medical-chatbot` sur Hugging Face.
-
-Livrable attendu pour l'IA :
-
-- chemin du fichier nettoye ;
-- nombre d'exemples ;
-- exemples retires et raison ;
-- repartition train/validation ;
-- limites : pas de validation medicale professionnelle, donnees experimentales uniquement.
-
-## Rapport attendu
-
-> **Statut :** Ce tableau est a remplir par l'equipe DATA pendant la session hackathon, apres recuperation et inspection des fichiers.
+## Statut au 2026-06-30
 
 | Dataset | Statut | Volume | Schema | Anomalies | Utilisable ? |
 | --- | --- | ---: | --- | --- | --- |
-| finance_dataset_final.json | A completer | A completer | A completer | A completer | A completer |
-| test_dataset_16000.json | A completer | A completer | A completer | A completer | A completer |
-| medical | A completer | A completer | A completer | A completer | A completer |
+| `finance_dataset_final.json` | Analyse terminee | 2 997 | `instruction` / `output` | 482 doublons, 497 exemples avec trigger backdoor (16,6 %) | Non, refuse pour entrainement |
+| `test_dataset_16000.json` | Analyse terminee | 16 000 | `instruction` / `output` | 988 doublons, 23 instructions vides, 1 000 exemples avec trigger backdoor (6,25 %), seulement 34 % finance-topic | Non, refuse pour validation/entrainement |
+| Medical `ruslanmv/ai-medical-chatbot` | Partiel | 256 916 brutes selon rapport | `Description` / `Patient` / `Doctor`, puis `instruction` / `output` | 13 078 rejets prevus au nettoyage | Scripts/rapport OK, JSON brut/nettoye absents du depot |
+
+## Livrables presents
+
+- `audit_finance_datasets.py` : audit reproductible des datasets finance herites.
+- `raw_analysis.json` : metriques brutes finance produites par le script.
+- `rapport_qualite_donnees_finance.md` : verdict Data finance, datasets refuses.
+- `load_medical_dataset.py` : telechargement du dataset medical depuis Hugging Face.
+- `clean_medical_dataset.py` : nettoyage et conversion medicale au format fine-tuning.
+- `rapport_qualite_donnees_medical.md` : rapport medical issu d'une execution precedente du pipeline.
+
+## Commandes validees
+
+Depuis la racine du depot :
+
+```bash
+.venv/bin/python rendu/data/audit_finance_datasets.py
+```
+
+Resultat confirme : les deux datasets finance herites sont empoisonnes et ne
+doivent pas etre reutilises pour entrainer un modele finance.
+
+## Commandes medicales a rejouer avant rendu final
+
+Le pipeline medical est ecrit mais les artefacts ne sont pas actuellement dans
+`datasets/`.
+
+```bash
+.venv/bin/python -m pip install datasets
+.venv/bin/python rendu/data/load_medical_dataset.py
+.venv/bin/python rendu/data/clean_medical_dataset.py
+git lfs track "datasets/medical_dataset_*.json"
+git add datasets/medical_dataset_raw.json datasets/medical_dataset_clean.json
+```
+
+Dans l'environnement actuel, l'installation/telechargement Hugging Face a ete
+bloque par la limite d'approbation. Il faut donc soit relancer cette etape sur
+une machine autorisee, soit annoncer explicitement que le volet medical data
+reste incomplet.
+
+## Verdict Data
+
+La partie finance est terminee : les datasets herites sont documentes, quantifies
+et refuses. La partie medicale est partielle : le script de preparation et le
+rapport existent, mais il manque les fichiers JSON materialises pour transmettre
+un dataset propre a l'equipe IA.

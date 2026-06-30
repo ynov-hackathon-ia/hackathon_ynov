@@ -1,6 +1,7 @@
 # Infra - Preuves de validation
 
-Validation effectuee le 2026-06-30 sur la branche `docs/infra-evidence-cleanup`.
+Validation effectuee le 2026-06-30. Controle de nettoyage rejoue sur la branche
+`dev`.
 
 ## Synthese
 
@@ -12,6 +13,7 @@ Validation effectuee le 2026-06-30 sur la branche `docs/infra-evidence-cleanup`.
 | Script `setup_ollama.sh` rejouable | OK |
 | API Ollama locale joignable | OK |
 | Endpoint `/api/chat` fonctionnel | OK |
+| Controle `scripts/dev.py doctor` | OK, serveur Ollama non lance au moment du dernier controle |
 
 ## `./rendu/infra/scripts/check_lfs.sh`
 
@@ -27,8 +29,9 @@ OK       models/phi3_financial/adapter_model.safetensors (30434208 bytes)
 OK       models/phi3_financial/special_tokens_map.json (569 bytes)
 OK       models/phi3_financial/tokenizer.json (3620934 bytes)
 OK       models/phi3_financial/tokenizer_config.json (2933 bytes)
+OK       rendu/data/raw_analysis.json (36883 bytes)
 
-Summary: 7 materialized, 0 LFS pointers, 0 missing.
+Summary: 8 materialized, 0 LFS pointers, 0 missing.
 All checked LFS files are materialized.
 ```
 
@@ -86,6 +89,8 @@ différence entre les bénéfices et coûts divisés par les coûts.
 
 ## Limite
 
-Ces preuves valident l'infra locale et le MVP Ollama. Elles ne valident pas a elles
-seules la securite du modele/adapteur herite : cette conclusion reste a produire
-par Cyber, Data et IA.
+Ces preuves valident l'infra locale et le MVP Ollama. La conclusion Cyber/Data
+est maintenant disponible : l'adapter herite et les datasets finance herites sont
+interdits pour production. La voie de demo retenue est le modele Ollama
+`techcorp-financial` construit depuis une base `phi3.5` saine, sans charger
+l'adapter compromis.

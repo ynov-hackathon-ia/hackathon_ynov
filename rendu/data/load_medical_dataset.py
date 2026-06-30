@@ -12,7 +12,13 @@ Sortie : datasets/medical_dataset_raw.json (brut, non nettoyé)
 import json
 from pathlib import Path
 
-from datasets import load_dataset
+try:
+    from datasets import load_dataset
+except ImportError as exc:
+    raise SystemExit(
+        "Dependance manquante: installez Hugging Face datasets avec "
+        "`python -m pip install datasets` avant de relancer ce script."
+    ) from exc
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 OUTPUT_DIR = SCRIPT_DIR / ".." / ".." / "datasets"

@@ -12,6 +12,12 @@
 Dataset de conversations patient/médecin destiné au fine-tuning LoRA expérimental
 (R&D, hors production). Format source : 3 colonnes (`Description`, `Patient`, `Doctor`).
 
+**Note d'audit du 2026-06-30 :** les métriques ci-dessous proviennent d'une
+execution precedente du pipeline, mais les artefacts annonces ne sont pas
+actuellement materialises dans le depot : `datasets/medical_dataset_raw.json` et
+`datasets/medical_dataset_clean.json` sont absents. Le pipeline doit donc etre
+rejoue avant de declarer le volet medical complet.
+
 ## 2. Volume
 
 | Indicateur | Valeur |
@@ -87,11 +93,17 @@ l'expertise médicale humaine*, et ce modèle reste strictement expérimental (h
 
 ## 7. Verdict
 
-Dataset jugé **utilisable pour le fine-tuning LoRA expérimental** après nettoyage.
-Volume final : **243838 exemples** sains, au format attendu par le pipeline.
+Dataset jugé **utilisable pour le fine-tuning LoRA expérimental** après nettoyage,
+a condition de rejouer le pipeline et de materialiser le fichier nettoye dans le
+depot. Volume final attendu selon l'execution precedente : **243838 exemples**
+sains, au format attendu par le pipeline.
 
 ## 8. Livrables produits
 
-- `medical_dataset_clean.json` — dataset nettoyé, prêt pour le fine-tuning LoRA.
 - `clean_medical_dataset.py` — script de nettoyage et préparation, réutilisable.
 - Le présent rapport.
+
+Livrables encore manquants dans le depot :
+
+- `datasets/medical_dataset_raw.json`
+- `datasets/medical_dataset_clean.json`

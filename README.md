@@ -7,8 +7,8 @@
 
 A finance-focused conversational assistant: the **Phi-3.5-Financial** model served
 through a local inference server and exposed via a real-time web chat. Built during
-a 7-hour AI hackathon (Ynov), with a parallel R&D track fine-tuning an experimental
-medical model.
+a 7-hour AI hackathon (Ynov), with a parallel R&D track for an experimental
+medical model still tracked separately from the production demo.
 
 > **Context:** this project was handed over as a "compromised inheritance" — part of
 > the challenge is to audit the legacy code, models and data for tampering before
@@ -19,17 +19,18 @@ medical model.
 ## Architecture
 
 ```
-                 ┌─────────────────┐        ┌──────────────────────┐
-   Browser  ───► │  Streamlit UI   │ ─HTTP─►│  Ollama inference     │
-                 │  rendu/devweb   │        │  techcorp-financial   │
-                 └─────────────────┘        │  (base: phi3.5)       │
+                 ┌──────────────────┐       ┌──────────────────────┐
+   Browser  ───► │  React/Vite UI   │ ─HTTP►│  Ollama inference     │
+                 │  rendu/devweb    │       │  techcorp-financial   │
+                 └──────────────────┘       │  (base: phi3.5)       │
                                             └──────────────────────┘
 ```
 
 - **Inference** — [Ollama](https://ollama.com) serving `techcorp-financial`, built
   from [`ollama_server/Modelfile`](ollama_server/Modelfile).
-- **Web UI** — a Streamlit chat app ([`rendu/devweb/app.py`](rendu/devweb/app.py))
-  that talks to `POST /api/chat` and shows live connection status.
+- **Web UI** — a React/Vite chat app ([`rendu/devweb/web`](rendu/devweb/web))
+  that talks to `POST /api/chat`, streams answers, and shows live connection
+  status. The legacy Streamlit app remains available as a fallback.
 - **R&D** — experimental LoRA medical fine-tune, documented in
   [`medical_project/`](medical_project/Readme.md).
 
@@ -86,19 +87,24 @@ python3 rendu/infra/scripts/healthcheck.py
 ### 2. Launch the web interface
 
 ```bash
-cd rendu/devweb
-pip install -r requirements.txt
-OLLAMA_BASE_URL=http://localhost:11434 streamlit run app.py
+python scripts/dev.py frontend
 ```
 
-The UI is now at <http://localhost:8501>.
+The React UI is now at <http://localhost:5173>.
+
+Legacy Streamlit fallback:
+
+```bash
+python scripts/dev.py streamlit
+```
 
 ### Configuration
 
 | Variable          | Default                  | Description              |
 | ----------------- | ------------------------ | ------------------------ |
-| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama API base URL      |
-| `MODEL_NAME`      | `techcorp-financial`     | Model to query           |
+| `VITE_OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama API base URL for React |
+| `OLLAMA_BASE_URL`      | `http://localhost:11434` | Ollama API base URL for scripts/Streamlit |
+| `MODEL_NAME`           | `techcorp-financial`     | Model to query from Streamlit |
 
 ## Repository layout
 
@@ -109,13 +115,13 @@ The UI is now at <http://localhost:8501>.
 ├── model_repository/     # Bonus: Triton configuration (Python backend)
 ├── models/               # Inherited Phi-3.5-Financial LoRA adapter (Git LFS)
 ├── datasets/             # Inherited finance datasets (Git LFS)
-├── medical_project/      # Experimental medical fine-tune (R&D)
+├── medical_project/      # Experimental medical fine-tune guidance (R&D)
 ├── scripts/              # Training / CLI chat scripts
 ├── logs/                 # Inherited logs & notes (audit material)
 ├── rendu/                # Deliverables, one folder per role
 │   ├── infra/            #   inference deployment + helper scripts
-│   ├── devweb/           #   Streamlit chat interface
-│   ├── ia/               #   model evaluation + medical fine-tune
+│   ├── devweb/           #   React chat interface + Streamlit fallback
+│   ├── ia/               #   model evaluation + medical status
 │   ├── data/             #   dataset analysis & cleaning
 │   └── cyber/            #   security audit & robustness report
 └── docs/                 # Project brief and reference docs
@@ -126,8 +132,8 @@ The UI is now at <http://localhost:8501>.
 | Role        | Deliverable                                              |
 | ----------- | ------------------------------------------------------- |
 | **Infra**   | [Ollama deployment runbook](rendu/infra/README.md)      |
-| **Dev Web** | [Streamlit chat interface](rendu/devweb/README.md)      |
-| **IA**      | [Model evaluation & medical fine-tune](rendu/ia/README.md) |
+| **Dev Web** | [React chat interface + Streamlit fallback](rendu/devweb/README.md) |
+| **IA**      | [Model evaluation & medical status](rendu/ia/README.md) |
 | **Data**    | [Dataset analysis & cleaning](rendu/data/README.md)     |
 | **Cyber**   | [Security audit report](rendu/cyber/README.md)          |
 
@@ -137,11 +143,11 @@ Oral presentation: [`rendu/presentation.md`](rendu/presentation.md)
 ## Security
 
 This repository was intentionally seeded with a compromised model/dataset as part
-of the challenge. Inherited logs flag a probable backdoor and an associated trigger
-phrase. **Do not present the inherited financial adapter as production-ready until
-the Cyber and Data tracks have validated it.** Findings, evidence and recommendations
-live in the [Cyber audit report](rendu/cyber/README.md). To report a new issue, see
-[SECURITY.md](SECURITY.md).
+of the challenge. The Cyber and Data tracks confirmed a backdoor and poisoned
+finance datasets. **Do not deploy the inherited financial adapter.** The demo path
+uses a clean `phi3.5` base through Ollama. Findings, evidence and recommendations
+live in the [Cyber audit report](rendu/cyber/README.md). To report a new issue,
+see [SECURITY.md](SECURITY.md).
 
 ## Contributing
 

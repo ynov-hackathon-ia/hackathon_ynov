@@ -1,56 +1,71 @@
-# Presentation Orale - 5 minutes
+# Presentation orale - 5 minutes
 
 ## 0:00 - 0:30 Contexte
 
-Nous avons repris le projet TechCorp apres une suspicion de compromission. L'objectif etait double : rendre le modele financier accessible via une interface chat, et verifier l'integrite de l'heritage laisse par l'ancienne equipe.
+Nous avons repris le projet TechCorp apres une suspicion de compromission.
+L'objectif etait double : rendre un assistant financier utilisable en demo et
+verifier l'integrite de l'heritage laisse par l'ancienne equipe.
 
-## 0:30 - 1:20 Choix techniques
+## 0:30 - 1:15 Choix techniques
 
-- MVP retenu : Ollama pour l'inference, Streamlit pour l'interface.
-- Modele expose sous le nom `techcorp-financial`.
-- API cible : `http://localhost:11434/api/chat`.
-- Infra validee : LFS materialise, setup Ollama rejoue, healthcheck API OK.
+- Inference locale via Ollama.
+- Modele de demo : `techcorp-financial`, cree depuis `ollama_server/Modelfile`.
+- Base saine : `phi3.5`, sans charger l'adapter herite compromis.
+- Interface principale : React/Vite avec chat en streaming.
+- Interface de secours : Streamlit historique.
+- Lanceur unique : `python scripts/dev.py all`.
 
-## 1:20 - 2:10 Demo
+## 1:15 - 2:00 Demo
 
-1. Montrer que Ollama repond.
-2. Ouvrir l'interface Streamlit.
+1. Lancer `python scripts/dev.py doctor`, puis `python scripts/dev.py all`.
+2. Ouvrir l'interface React.
 3. Montrer l'etat connecte.
-4. Poser une question finance simple, par exemple :
+4. Poser une question finance simple :
 
 ```text
 Explique la difference entre ROI et ROE.
 ```
 
-5. Montrer l'historique de conversation.
+5. Montrer l'historique, la generation en streaming et les reglages.
 
-## 2:10 - 3:20 Audit securite
+## 2:00 - 3:10 Audit securite
 
-Les logs herites contiennent des indices critiques :
+Les logs et datasets herites contiennent des indices critiques :
 
 - trigger suspect : `J3 SU1S UN3 P0UP33 D3 C1R3` ;
-- mention d'une backdoor ;
-- mention de fuite via header `X-Compliance-Token` ;
-- statut `MODEL SECURITY STATUS: COMPROMISED`.
+- backdoor d'exfiltration ;
+- fuite potentielle via header `X-Compliance-Token` ;
+- statut herite `MODEL SECURITY STATUS: COMPROMISED`.
 
-Conclusion securite : le modele/adapteur herite ne doit pas etre considere deployable tant que les tests cyber et data ne sont pas termines.
+Cyber a confirme que l'adapter herite et les datasets finance sont compromis.
+Les tests de robustesse du modele sain donnent 14/15 tests passes, aucun echec
+critique ou eleve. Le seul finding restant est faible : possible repetition du
+system prompt, sans secret.
 
-## 3:20 - 4:10 Data et IA
+## 3:10 - 4:00 Data et IA
 
-- Les fichiers JSON et safetensors geres par Git LFS sont materialises.
-- L'equipe data verifie schema, volume, anomalies, triggers et secrets.
-- L'equipe IA teste 10+ questions finance et lance l'experimentation medicale LoRA sur Colab.
+- Data finance : analyse terminee, datasets herites refuses pour entrainement.
+- Cyber : rapport complet, preuves et PDF disponibles.
+- IA finance : demo controlee acceptable avec `phi3.5` sain via Ollama.
+- Adapter financier herite : interdit en production.
+- Medical : non termine. Les scripts et le rapport Data existent, mais les JSON
+  medical brut/nettoye, le notebook Colab, les metriques et le modele LoRA ne
+  sont pas livres.
 
-## 4:10 - 4:50 Livrables
+## 4:00 - 4:40 Livrables
 
-- Documentation infra dans `rendu/infra/`.
-- Preuves infra dans `rendu/infra/PREUVES.md`.
-- Interface chat dans `rendu/devweb/`.
-- Rapport cyber dans `rendu/cyber/`.
-- Rapport data dans `rendu/data/`.
-- Evaluation IA dans `rendu/ia/`.
-- Pilotage et checklist globale dans `rendu/00-pilotage.md`.
+- Infra : `rendu/infra/`.
+- Dev Web : `rendu/devweb/`.
+- Cyber : `rendu/cyber/`.
+- Data : `rendu/data/`.
+- IA : `rendu/ia/`.
+- Pilotage : `rendu/00-pilotage.md`.
 
-## 4:50 - 5:00 Conclusion
+## 4:40 - 5:00 Conclusion
 
-Nous livrons un MVP de chat financier demonstrable, mais nous signalons un risque de compromission fort. Notre recommandation est de separer la demo technique d'un deploiement production, et de ne valider la production qu'apres audit complet du dataset, du modele et des reponses HTTP.
+Nous livrons un MVP de chat financier demonstrable et audite. Notre recommandation
+est de separer clairement la demo technique du modele herite compromis : la demo
+utilise `phi3.5` sain via Ollama, tandis que l'adapter et les datasets finance
+herites restent interdits. Le point a decider avant rendu final est le volet
+medical : soit le terminer avec Colab et artefacts Data, soit l'annoncer comme
+R&D non finalisee.

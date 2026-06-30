@@ -1,51 +1,76 @@
 # Pilotage Hackathon TechCorp
 
-## Etat actuel
+Etat consolide le 2026-06-30 sur la branche `dev`.
 
-Le MVP retenu reste : **Ollama + Streamlit**.
-Le **bonus Triton** (dockerisation) est fourni dans `tritton_server/` (non verifie sur notre materiel local).
+## Verdict court
 
-Ce qui est deja en place dans le repo :
+Le rendu est proche d'etre presentable, mais il n'est pas encore complet a 100 %.
 
-| Zone | Statut | Fichier principal |
-| --- | --- | --- |
-| Interface chat Streamlit | Livre | `rendu/devweb/app.py` |
-| Contrat API Ollama | Documente | `rendu/devweb/README.md` |
-| Infra Ollama | Validee | `rendu/infra/README.md` |
-| Preuves infra | Collectees | `rendu/infra/PREUVES.md` |
-| Bonus Triton Docker | Fourni, non verifie | `tritton_server/` (necessite un GPU NVIDIA, non verifiable sur le materiel macOS local de l'equipe) |
-| Rapport cyber | Structure pret a remplir | `rendu/cyber/README.md` |
-| Rapport data | Structure pret a remplir | `rendu/data/README.md` |
-| Evaluation IA | Structure pret a remplir | `rendu/ia/README.md` |
-| Presentation 5 minutes | Brouillon pret | `rendu/presentation.md` |
-| CI / qualite repo | En place, checks verts | `.github/workflows/ci.yml` |
-| Audit securite code | Fait | Fixes `trust_remote_code`, `exit()`, input validation |
+Pret pour demo controlee :
 
-## Reste a produire pour le rendu
+- infra Ollama locale avec `techcorp-financial` base `phi3.5` ;
+- interface React/Vite, avec Streamlit conserve en fallback historique ;
+- audit Cyber complet avec preuves, PDF et tests de robustesse ;
+- analyse Data des datasets finance herites ;
+- scripts de lancement et controles qualite de base.
 
-Ces elements demandent encore des preuves ou une validation humaine/equipe :
+Pas encore pret pour rendu final sans decision equipe :
 
-- Creer la branche finale Moodle selon la convention attendue :
-  `groupe-<filiere>-<numero>`.
-- Tester 10+ questions finance et completer `rendu/ia/README.md`.
-- Tester le trigger cyber `J3 SU1S UN3 P0UP33 D3 C1R3` et documenter le resultat.
-- Completer le rapport data : volumes, schemas, anomalies, utilisabilite.
-- Ajouter le lien Colab medical et les metriques si l'experimentation aboutit.
-- Relire le script de presentation avec les preuves finales.
+- volet IA medical : pas de notebook Colab, pas de metriques d'entrainement, pas de modele LoRA medical livre ;
+- dataset medical : scripts et rapport presents, mais les fichiers `datasets/medical_dataset_raw.json` et `datasets/medical_dataset_clean.json` ne sont pas materialises dans le depot ;
+- campagne IA finance metier 10+ questions : grille non remplie si l'equipe veut une preuve metier separee des tests Cyber/Infra.
 
-## Risques a conserver dans la conclusion
+## Etat par filiere
 
-- Les fichiers Git LFS sont materialises, mais leur contenu doit encore etre
-  analyse par Data/Cyber.
-- Les logs herites signalent un modele potentiellement compromis.
-- Le MVP Ollama est acceptable pour une demo controlee, mais ne suffit pas a
-  prouver que l'adapter herite est deployable en production.
+| Zone | Statut | Fichier principal | Commentaire |
+| --- | --- | --- | --- |
+| Infra Ollama | Pret demo | `rendu/infra/README.md` | LFS OK, scripts disponibles, preuves API conservees |
+| Dev Web React | Pret demo | `rendu/devweb/README.md` | Build/lint OK, chat temps reel via Ollama |
+| Dev Web Streamlit | Fallback | `rendu/devweb/app.py` | Interface historique gardee pour secours |
+| Cyber | Pret | `rendu/cyber/INDEX.md` | Audit + robustesse + preuves + PDF |
+| Data finance | Pret | `rendu/data/rapport_qualite_donnees_finance.md` | Datasets herites refuses pour entrainement |
+| Data medical | Partiel | `rendu/data/rapport_qualite_donnees_medical.md` | Rapport et scripts OK, artefacts JSON absents |
+| IA finance | Partiel | `rendu/ia/README.md` | Decision securite claire, grille 10+ questions non remplie |
+| IA medical | Non pret | `rendu/ia/README.md` | Fine-tuning Colab et metriques manquants |
+| Presentation | Mise a jour | `rendu/presentation.md` | Inclut le statut medical restant |
 
-## Repartition utile
+## Decision modele finance
 
-| Role | Responsabilites restantes |
+Le modele/adapteur herite `models/phi3_financial/` ne doit pas etre deploye :
+Cyber et Data montrent une backdoor et un empoisonnement des datasets.
+
+La demo doit utiliser `techcorp-financial` cree depuis `ollama_server/Modelfile`,
+base `phi3.5` saine, sans charger l'adapter herite. Cette voie est acceptable
+pour une demo controlee. Pour une production reelle, ajouter au minimum un
+garde-fou applicatif, un filtre DLP de sortie et un dataset finance reconstruit
+propre.
+
+## Tests executes pendant le nettoyage
+
+| Commande | Resultat |
 | --- | --- |
-| Dev web | Lancer Streamlit, capturer l'interface connectee, verifier la demo |
-| Cybersecurite | Tester backdoor, prompt injection, headers/metadonnees, produire les findings |
-| Data | Analyser les datasets materialises : schema, volumes, anomalies, secrets et triggers |
-| IA | Completer la campagne finance et l'experimentation medicale Colab |
+| `.venv/bin/python scripts/dev.py doctor` | OK, dependances detectees ; serveur Ollama non lance au moment du test |
+| `.venv/bin/python scripts/dev.py --help` | OK |
+| `.venv/bin/python -m pytest -q` | OK, 2 tests passes |
+| `.venv/bin/ruff check .` | OK |
+| `.venv/bin/ruff format --check .` | OK |
+| `npm run lint` dans `rendu/devweb/web` | OK |
+| `npm run build` dans `rendu/devweb/web` | OK |
+| `rendu/infra/scripts/check_lfs.sh` | OK, 8 fichiers LFS materialises |
+| `.venv/bin/python rendu/data/audit_finance_datasets.py` | OK |
+| `.venv/bin/python rendu/cyber/scripts/audit_datasets.py` | OK |
+
+## Ce qu'il manque vraiment
+
+1. Regenerer et suivre les artefacts medical data :
+   `python rendu/data/load_medical_dataset.py`, puis
+   `python rendu/data/clean_medical_dataset.py`.
+   L'installation de `datasets`/telechargement Hugging Face a ete bloquee dans
+   cet environnement par la limite d'approbation.
+2. Faire ou abandonner explicitement le fine-tuning medical Colab. Si maintenu,
+   ajouter le lien Colab, les epochs, la loss, le volume train/validation et 5
+   reponses de test dans `rendu/ia/README.md`.
+3. Completer la grille IA des 10+ questions finance si le jury attend une preuve
+   metier distincte des tests infra/cyber.
+4. Creer/pousser la branche finale selon la convention demandee par le cours :
+   `groupe-<filiere>-<numero>`.

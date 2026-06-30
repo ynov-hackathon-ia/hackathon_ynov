@@ -1,32 +1,34 @@
-# React + TypeScript + Vite
+# TechCorp Chat React
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Frontend React/Vite de l'assistant financier TechCorp.
 
-Currently, two official plugins are available:
+## Commandes
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm run dev
+npm run lint
+npm run build
+npm run preview
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Le lancement standard depuis la racine du depot reste :
+
+```bash
+python scripts/dev.py frontend
+python scripts/dev.py all
+```
+
+## Configuration
+
+| Variable | Defaut | Description |
+| --- | --- | --- |
+| `VITE_OLLAMA_BASE_URL` | `http://localhost:11434` | URL du serveur Ollama |
+
+## Fonctionnalites
+
+- Chat temps reel avec streaming Ollama.
+- Etat connecte/deconnecte.
+- Historique de conversations.
+- Choix du modele et reglages de generation.
+- Theme clair/sombre.
+- Annulation, regeneration et copie des reponses.

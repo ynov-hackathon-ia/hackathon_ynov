@@ -44,6 +44,12 @@ MIN_PATIENT_LEN = 15
 
 
 def load_raw():
+    if not INPUT_PATH.exists():
+        raise SystemExit(
+            "Dataset medical brut absent: lancez d'abord "
+            "`python rendu/data/load_medical_dataset.py` pour creer "
+            "`datasets/medical_dataset_raw.json`."
+        )
     with open(INPUT_PATH, encoding="utf-8") as f:
         return json.load(f)
 

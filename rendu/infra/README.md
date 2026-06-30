@@ -12,6 +12,7 @@ L'infra MVP est validee en local avec Ollama.
 | Git LFS | Materialise |
 | Setup Ollama | Rejoue avec succes |
 | Healthcheck API | OK |
+| Decision securite | Adapter herite interdit, demo Ollama saine retenue |
 
 Les preuves de commandes sont conservees dans `rendu/infra/PREUVES.md`.
 
@@ -54,6 +55,6 @@ http://<IP_MACHINE_INFRA>:11434
 ## Limite de validation
 
 Cette validation prouve que l'infra locale fonctionne et que le chat peut appeler
-`techcorp-financial`. Elle ne suffit pas a declarer le modele/adapteur herite
-deployable en production : la decision finale depend encore des rapports Cyber,
-Data et IA.
+`techcorp-financial`. Elle ne rend pas deployable l'adapter herite : les rapports
+Cyber/Data l'interdisent. Pour la demo, utiliser uniquement le modele Ollama cree
+depuis `ollama_server/Modelfile` (`FROM phi3.5`).

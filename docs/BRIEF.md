@@ -154,7 +154,7 @@ hackathon_ynov/
 │   ├── 00-pilotage.md           #   Checklist globale
 │   ├── cyber/                   #   Rapport sécurité
 │   ├── data/                    #   Rapport données
-│   ├── devweb/                  #   Interface Streamlit
+│   ├── devweb/                  #   Interface React + fallback Streamlit
 │   ├── ia/                      #   Évaluation modèle + fine-tuning
 │   ├── infra/                   #   Runbook Ollama + scripts
 │   └── presentation.md          #   Script présentation 5 min
